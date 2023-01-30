@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-# (c) Nano Nano Ltd 2021
+# (c)
 
 # Support for Polkadot, Kusama and others via SubScan
 
 import time
-from decimal import Decimal
 
-from .etherscan import get_note
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
@@ -15,10 +13,7 @@ WORKSHEET_NAME = "SubScan"
 
 def parse_subscan(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
-    # data_row.timestamp = row_dict['Date']
-    # data_row.timestamp = time.mktime(time.strptime())
     data_row.timestamp = DataParser.parse_timestamp(row_dict['Date'])
-    # print("parse_subscan", _kwargs['filename'].split('-'))
 
     if row_dict['Result'] != 'true':
         # Failed txns should not have a Value_OUT
