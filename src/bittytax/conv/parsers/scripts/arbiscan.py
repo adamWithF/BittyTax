@@ -69,38 +69,38 @@ def parse_arbiscan_internal(data_row, _parser, **_kwargs):
                                                  sell_asset="ETH",
                                                  wallet=get_wallet(row_dict['From']))
 
-arbitrum_txns = DataParser(
+arbiscan_txns = DataParser(
         DataParser.TYPE_EXPLORER,
         "ArbiScan (Arbitrum Transactions)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)",None,"TxnFee(ETH)","TxnFee(USD)","Historical $Price/ETH","Status","ErrCode","Method"],
         worksheet_name=WORKSHEET_NAME,
         row_handler=parse_arbiscan)
 
-DataParser(DataParser.TYPE_EXPLORER,
-           "ArbiScan (Arbitrum Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
-            'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
-            'Historical $Price/ETH', 'Status', 'ErrCode', 'PrivateNote'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_arbiscan)
+# DataParser(DataParser.TYPE_EXPLORER,
+#            "ArbiScan (Arbitrum Transactions)",
+#            ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
+#             'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
+#             'Historical $Price/ETH', 'Status', 'ErrCode', 'PrivateNote'],
+#            worksheet_name=WORKSHEET_NAME,
+#            row_handler=parse_arbiscan)
 
-DataParser(DataParser.TYPE_EXPLORER,
-           "ArbiScan (Arbitrum Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
-            'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
-            'Historical $Price/ETH', 'Status', 'ErrCode', 'Method'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_arbiscan)
+# DataParser(DataParser.TYPE_EXPLORER,
+#            "ArbiScan (Arbitrum Transactions)",
+#            ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
+#             'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
+#             'Historical $Price/ETH', 'Status', 'ErrCode', 'Method'],
+#            worksheet_name=WORKSHEET_NAME,
+#            row_handler=parse_arbiscan)
 
-DataParser(DataParser.TYPE_EXPLORER,
-           "ArbiScan (Arbitrum Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
-            'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
-            'Historical $Price/ETH', 'Status', 'ErrCode', 'Method', 'PrivateNote'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_arbiscan)
+# DataParser(DataParser.TYPE_EXPLORER,
+#            "ArbiScan (Arbitrum Transactions)",
+#            ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
+#             'Value_IN(ETH)', 'Value_OUT(ETH)', None, 'TxnFee(ETH)', 'TxnFee(USD)',
+#             'Historical $Price/ETH', 'Status', 'ErrCode', 'Method', 'PrivateNote'],
+#            worksheet_name=WORKSHEET_NAME,
+#            row_handler=parse_arbiscan)
 
-arbitrum_int = DataParser(
+arbiscan_int = DataParser(
         DataParser.TYPE_EXPLORER,
         "ArbiScan (Arbitrum Internal Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
@@ -109,14 +109,14 @@ arbitrum_int = DataParser(
         worksheet_name=WORKSHEET_NAME,
         row_handler=parse_arbiscan_internal)
 
-DataParser(DataParser.TYPE_EXPLORER,
-           "ArbiScan (Arbitrum Internal Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
-            'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(ETH)',
-            'Value_OUT(ETH)', None, 'Historical $Price/ETH', 'Status', 'ErrCode', 'Type',
-            'PrivateNote'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_arbiscan_internal)
+# DataParser(DataParser.TYPE_EXPLORER,
+#            "ArbiScan (Arbitrum Internal Transactions)",
+#            ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
+#             'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(ETH)',
+#             'Value_OUT(ETH)', None, 'Historical $Price/ETH', 'Status', 'ErrCode', 'Type',
+#             'PrivateNote'],
+#            worksheet_name=WORKSHEET_NAME,
+#            row_handler=parse_arbiscan_internal)
 
 # Same header as Etherscan
 #DataParser(DataParser.TYPE_EXPLORER,
