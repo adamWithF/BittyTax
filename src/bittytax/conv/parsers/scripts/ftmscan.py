@@ -90,19 +90,10 @@ fantom_int = DataParser(
         DataParser.TYPE_EXPLORER,
         "FtmScan (FTM Internal Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
-         'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(FTM)',
+         'ParentTxFTM_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(FTM)',
          'Value_OUT(FTM)', None, 'Historical $Price/FTM', 'Status', 'ErrCode', 'Type'],
         worksheet_name=WORKSHEET_NAME,
         row_handler=parse_fantomscan_internal)
-
-DataParser(DataParser.TYPE_EXPLORER,
-           "FtmScan (FTM Internal Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
-            'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(FTM)',
-            'Value_OUT(FTM)', None, 'Historical $Price/FTM', 'Status', 'ErrCode', 'Type',
-            'PrivateNote'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_fantomscan_internal)
 
 # Same header as Etherscan
 #DataParser(DataParser.TYPE_EXPLORER,
