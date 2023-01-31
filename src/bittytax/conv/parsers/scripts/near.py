@@ -46,7 +46,7 @@ def get_wallet_address(filename):
     return filename.split('-')[0]
 
 
-subscan_txns = DataParser(
+near_txns = DataParser(
     DataParser.TYPE_EXPLORER,
     "Near",
     ['Status','Txn Hash','Method','Deposit Value','Txn Fee','From','To','Block','Time'],
