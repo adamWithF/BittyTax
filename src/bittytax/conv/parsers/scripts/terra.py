@@ -41,7 +41,7 @@ def get_wallet_address(filename):
 
 
 
-subscan_txns = DataParser(
+terra_txns = DataParser(
     DataParser.TYPE_EXPLORER,
     "Terra",
     ['Timestamp','Transaction Hash','Tracked Address','Transaction Type','Sender','Recipient','Amount','Currency','Fee Amount','Fee Currency'],
