@@ -8,7 +8,7 @@ import time
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
-WALLET = "SubScan"
+WALLET = "Polkadot / Kusama"
 WORKSHEET_NAME = "SubScan"
 
 def parse_subscan(data_row, _parser, **_kwargs):
