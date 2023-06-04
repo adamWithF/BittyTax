@@ -89,9 +89,9 @@ moonscan_txns = DataParser(
 moonscan_int = DataParser(
         DataParser.TYPE_EXPLORER,
         "FtmScan (MOVR Internal Transactions)",
-        ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
-         'ParentTxFTM_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(MOVR)',
-         'Value_OUT(MOVR)', None, 'Historical $Price/MOVR', 'Status', 'ErrCode', 'Type'],
+        ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo",
+         "ParentTxMOVR_Value","From","TxTo","ContractAddress","Value_IN(MOVR)","Value_OUT(MOVR)",
+         None,"Historical $Price/MOVR","Status","ErrCode","Type"],
         worksheet_name=WORKSHEET_NAME,
         row_handler=parse_moonscan_internal)
 
