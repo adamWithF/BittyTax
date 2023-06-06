@@ -2,6 +2,7 @@ from . import (
     accointing,
     adalite,
     aptoscan,
+    arweave,
     barclays,
     binance,
     binance_us,

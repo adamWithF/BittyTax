@@ -17,24 +17,26 @@ def parse_arweave(data_row, _parser, **_kwargs):
         # Failed txns should not have a Value_OUT
         return
 
-    if get_wallet_address(_kwargs['filename']) == row_dict['to']:
+    if row_dict['direction'] == 'in':
         data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
                                                  data_row.timestamp,
-                                                 buy_quantity=abs(float(row_dict['value'].split(' ')[0].replace(',', ''))),
-                                                 buy_asset=row_dict['value'].split(' ')[1],
+                                                 buy_quantity=get_quantity(row_dict),
+                                                 buy_asset="AR",
                                                  fee_quantity=row_dict['fee'].split(' ')[0],
-                                                 fee_asset=row_dict['fee'].split(' ')[1],
+                                                 fee_asset="AR",
                                                  wallet=get_wallet(row_dict['to']))
 
     else:
         data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
                                                  data_row.timestamp,
-                                                 sell_quantity=abs(float(row_dict['value'].split(' ')[0].replace(',', ''))),
-                                                 sell_asset=row_dict['value'].split(' ')[1],
+                                                 sell_quantity=get_quantity(row_dict),
+                                                 sell_asset="AR",
                                                  fee_quantity=row_dict['fee'].split(' ')[0],
-                                                 fee_asset=row_dict['fee'].split(' ')[1],
+                                                 fee_asset="AR",
                                                  wallet=get_wallet(row_dict['from']))
 
+def get_quantity(row_dict):
+    return abs(float(row_dict['value'].split(' ')[0].replace(',', '')))
 
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])
@@ -42,10 +44,9 @@ def get_wallet(address):
 def get_wallet_address(filename):
     return filename.split('-')[0]
 
-
 arweave_txns = DataParser(
     DataParser.TYPE_EXPLORER,
-    "Near",
+    "Arweave",
     ['hash','timestamp','time','height','from','direction','to','value','token','fee','method','success','error'],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_arweave)
