@@ -1,5 +1,6 @@
 from . import (
     accointing,
+    arweave,
     barclays,
     binance,
     bitfinex,
