@@ -3,7 +3,7 @@
 
 from decimal import Decimal
 
-from .etherscan import get_note
+from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
@@ -25,7 +25,7 @@ def parse_moonscan(data_row, _parser, **_kwargs):
                                                      buy_quantity=row_dict['Value_IN(MOVR)'],
                                                      buy_asset="MOVR",
                                                      wallet=get_wallet(row_dict['To']),
-                                                     note=get_note(row_dict))
+                                                     note=_get_note(row_dict))
     elif Decimal(row_dict['Value_OUT(MOVR)']) > 0:
         data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
                                                  data_row.timestamp,
@@ -34,7 +34,7 @@ def parse_moonscan(data_row, _parser, **_kwargs):
                                                  fee_quantity=row_dict['TxnFee(MOVR)'],
                                                  fee_asset="MOVR",
                                                  wallet=get_wallet(row_dict['From']),
-                                                 note=get_note(row_dict))
+                                                 note=_get_note(row_dict))
     else:
         data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_SPEND,
                                                  data_row.timestamp,
@@ -43,7 +43,7 @@ def parse_moonscan(data_row, _parser, **_kwargs):
                                                  fee_quantity=row_dict['TxnFee(MOVR)'],
                                                  fee_asset="MOVR",
                                                  wallet=get_wallet(row_dict['From']),
-                                                 note=get_note(row_dict))
+                                                 note=_get_note(row_dict))
 
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])

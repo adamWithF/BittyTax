@@ -46,6 +46,7 @@ from . import (
     kucoin,
     ledgerlive,
     liquid,
+    moonscan,
     mercatox,
     nault,
     nexo,
