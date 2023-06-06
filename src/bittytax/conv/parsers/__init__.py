@@ -43,6 +43,7 @@ from . import (
     etherscan,
     exodus,
     fatstx,
+    ftmscan,
     ftx,
     gatehub,
     gateio,
