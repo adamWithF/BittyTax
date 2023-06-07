@@ -169,32 +169,6 @@ class OutputCsv(OutputBase):
 
     @staticmethod
     def _to_bittytax_csv(tr):
-        if (
-            tr.buy_quantity is not None
-            and len(tr.buy_quantity.normalize().as_tuple().digits) > OutputBase.EXCEL_PRECISION
-        ):
-            sys.stderr.write(
-                f"{WARNING} {OutputBase.EXCEL_PRECISION}-digit precision exceeded for "
-                f"Buy Quantity: {tr.format_quantity(tr.buy_quantity)}{Fore.RESET}\n"
-            )
-
-        if (
-            tr.sell_quantity is not None
-            and len(tr.sell_quantity.normalize().as_tuple().digits) > OutputBase.EXCEL_PRECISION
-        ):
-            sys.stderr.write(
-                f"{WARNING} {OutputBase.EXCEL_PRECISION}-digit precision exceeded for "
-                f"Sell Quantity: {tr.format_quantity(tr.sell_quantity)}{Fore.RESET}\n"
-            )
-
-        if (
-            tr.fee_quantity is not None
-            and len(tr.fee_quantity.normalize().as_tuple().digits) > OutputBase.EXCEL_PRECISION
-        ):
-            sys.stderr.write(
-                f"{WARNING} {OutputBase.EXCEL_PRECISION}-digit precision exceeded for"
-                f"Fee Quantity: {tr.format_quantity(tr.fee_quantity)}{Fore.RESET}\n"
-            )
         return [
             tr.t_type,
             OutputCsv._format_decimal(tr.buy_quantity),
