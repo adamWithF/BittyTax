@@ -3,8 +3,7 @@
 
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.bscscan import BSC_INT, BSC_TXNS, WALLET, WORKSHEET_NAME
-from ..parsers.etherscan import ETHERSCAN_NFTS, ETHERSCAN_TOKENS
+from ..parsers.bscscan import BSC_INT, BSC_TXNS, BSCSCAN_NFTS, BSCSCAN_TOKENS, WALLET, WORKSHEET_NAME
 from .etherscan import INTERNAL_TXNS, NFTS, TOKENS, TXNS, _do_merge_etherscan
 
 STAKE_ADDRESSES = ["0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"]  # PancakeSwap
@@ -37,8 +36,8 @@ DataMerge(
     "BscScan fees & multi-token transactions",
     {
         TXNS: {"req": DataMerge.MAN, "obj": BSC_TXNS},
-        TOKENS: {"req": DataMerge.OPT, "obj": ETHERSCAN_TOKENS},
-        NFTS: {"req": DataMerge.OPT, "obj": ETHERSCAN_NFTS},
+        TOKENS: {"req": DataMerge.OPT, "obj": BSCSCAN_TOKENS},
+        NFTS: {"req": DataMerge.OPT, "obj": BSCSCAN_NFTS},
         INTERNAL_TXNS: {"req": DataMerge.OPT, "obj": BSC_INT},
     },
     merge_bscscan,

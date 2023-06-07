@@ -83,6 +83,64 @@ def parse_bscscan_internal(data_row, _parser, **_kwargs):
         )
 
 
+def parse_bscscan_tokens(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["TokenSymbol"].endswith("-LP"):
+        asset = row_dict["TokenSymbol"] + "-" + row_dict["ContractAddress"][0:10]
+    else:
+        asset = row_dict["TokenSymbol"]
+
+    if "Value" in row_dict:
+        quantity = row_dict["Value"].replace(",", "")
+    else:
+        quantity = row_dict["TokenValue"].replace(",", "")
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=quantity,
+            buy_asset=asset,
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=quantity,
+            sell_asset=asset,
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+def parse_bscscan_nfts(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=1,
+            buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=1,
+            sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
 # Tokens and internal transactions have the same header as Etherscan
 BSC_TXNS = DataParser(
     DataParser.TYPE_EXPLORER,
@@ -235,4 +293,79 @@ DataParser(
     ],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan_internal,
+)
+
+BSCSCAN_TOKENS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "TokenValue",  # Renamed
+        "USDValueDayOfTx",  # New field
+        "ContractAddress",  # New field
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_bscscan_tokens,
+)
+
+DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
+    [
+        "Txhash",
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "Value",
+        "ContractAddress",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_bscscan_tokens,
+)
+
+BSCSCAN_NFTS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "ContractAddress",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_bscscan_nfts,
+)
+
+DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
+    [
+        "Txhash",
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "ContractAddress",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_bscscan_nfts,
 )
