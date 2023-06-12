@@ -6,8 +6,11 @@ from ..out_record import TransactionOutRecord
 from ..parsers.bscscan import BSC_INT, BSC_TXNS, BSC_NFTS, BSC_TOKENS, WALLET, WORKSHEET_NAME
 from .etherscan import _do_merge_etherscan
 
-STAKE_ADDRESSES = ["0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"]  # PancakeSwap
-
+STAKE_ADDRESSES = [
+    "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", # PancakeSwap
+    # "0x5a55Fce6F6aCB2B1b20514964301Db4f37028C81", # APE Swap LP
+    "0xcf0febd3f17cef5b47b0cd257acf6025c5bff3b7", # APE Swap router
+]
 
 def merge_bscscan(data_files):
     # Do same merge as Etherscan

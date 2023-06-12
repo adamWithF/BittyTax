@@ -9,14 +9,14 @@ from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
 WALLET = "Solana"
-WORKSHEET_NAME = "Solana"
+WORKSHEET_NAME = "Solana SolScan"
 
-def parse_solana(data_row, _parser, **_kwargs):
+def parse_solana(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(row_dict['BlockTime'])
 
     if row_dict['Type'] == 'SolTransfer':
-        if get_wallet_address(_kwargs['filename']) == row_dict['SolTransfer Destination']:
+        if row_dict['SolTransfer Destination'] in kwargs['filename']:
             data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
                                                      data_row.timestamp,
                                                      buy_quantity=abs(float(row_dict['Amount (SOL)'].replace(',', ''))),
@@ -43,7 +43,7 @@ def get_wallet_address(filename):
 
 solscan_txns = DataParser(
     DataParser.TYPE_EXPLORER,
-    "Solana",
+    f"{WALLET} ({WORKSHEET_NAME} Transactions)",
     ['Type', 'Txhash', 'BlockTime Unix', 'BlockTime', 'Fee (SOL)', 'TokenAccount', 'ChangeType', 'SPL BalanceChange', 'PreBalancer', 'PostBalancer', 'TokenAddress', 'TokenName(off-chain)', 'Symbol(off-chain)', 'SolTransfer Source', 'SolTransfer Destination', 'Amount (SOL)'],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_solana)

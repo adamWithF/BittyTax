@@ -109,6 +109,7 @@ DataParser(
     ["Extrinsic ID", "Block", "Block Timestamp", "From", "To", "Value", "Symbol", "Result", "Hash"],
     worksheet_name="Subscan",
     row_handler=parse_subscan_transfers,
+    filename_prefix="polkadot",
 )
 
 DataParser(
@@ -117,6 +118,7 @@ DataParser(
     ["Extrinsic ID", "Date", "Block", "Hash", "Symbol", "From", "To", "Value", "Result"],
     worksheet_name="Subscan",
     row_handler=parse_subscan_transfers,
+    filename_prefix="polkadot",
 )
 
 DataParser(
@@ -125,6 +127,7 @@ DataParser(
     ["Event ID", "Block", "Extrinsic ID", "Pool", "Pool", "Value", "Action", "Time"],
     worksheet_name="Subscan",
     row_handler=parse_subscan_paidout,
+    filename_prefix="polkadot",
 )
 
 # The legacy format only contains the Pool, not the Address.
@@ -134,23 +137,26 @@ DataParser(
     ["Event ID", "Extrinsic ID", "Pool", "Value", "Action", "Time"],
     worksheet_name="Subscan",
     row_handler=parse_subscan_paidout,
+    filename_prefix="polkadot",
 )
+
+
 
 '''
 =======
 # (c)
 
-# Support for Polkadot, Kusama and others via SubScan
+# Support for Polkadot
 
 import time
 
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
-WALLET = "Polkadot / Kusama"
-WORKSHEET_NAME = "SubScan"
+WALLET = "Polkadot"
+WORKSHEET_NAME = f"{WALLET} SubScan"
 
-def parse_subscan(data_row, _parser, **_kwargs):
+def parse_subscan(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(row_dict['Date'])
 
@@ -159,7 +165,7 @@ def parse_subscan(data_row, _parser, **_kwargs):
         return
 
     # depending on To From values, compare to local address below
-    if get_wallet_address(_kwargs['filename']) == row_dict['To']:
+    if row_dict['To'].lower() in kwargs['filename'].lower():
         data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
                                                  data_row.timestamp,
                                                  buy_quantity=row_dict['Value'],
@@ -180,11 +186,12 @@ def get_wallet_address(filename):
     return filename.split('-')[0]
 
 
-subscan_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
-    "SubScan",
+POLKADOT_TXNS = DataParser(
+    DataParser.EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} Transfer History)",
     ['Extrinsic ID','Date','Block','Hash','Symbol','From','To','Value','Result'],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_subscan)
->>>>>>> theirs
+    row_handler=parse_subscan,
+    filename_prefix="polkadot",
+)
 '''
