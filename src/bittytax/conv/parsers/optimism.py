@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2023
 
+import ntpath
 from decimal import Decimal
 
 from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
-WALLET = "Arbitrum"
-WORKSHEET_NAME = "ArbiScan"
+WALLET = "Optimism"
+WORKSHEET_NAME = "Optimistic Ethereum Scanner"
 
-def parse_arbiscan(data_row, _parser, **_kwargs):
+def parse_optimism(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict['UnixTimestamp']))
 
@@ -48,7 +49,7 @@ def parse_arbiscan(data_row, _parser, **_kwargs):
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])
 
-def parse_arbiscan_internal(data_row, _parser, **_kwargs):
+def parse_optimism_internal(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -74,7 +75,7 @@ def parse_arbiscan_internal(data_row, _parser, **_kwargs):
         )
 
 
-def parse_arbiscan_tokens(data_row, _parser, **kwargs):
+def parse_optimism_tokens(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -108,7 +109,7 @@ def parse_arbiscan_tokens(data_row, _parser, **kwargs):
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
 
-def parse_arbiscan_nfts(data_row, _parser, **kwargs):
+def parse_optimism_nfts(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -118,7 +119,7 @@ def parse_arbiscan_nfts(data_row, _parser, **kwargs):
             data_row.timestamp,
             buy_quantity=1,
             buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
-            wallet=_get_wallet(row_dict["To"]),
+            wallet=get_wallet(row_dict["To"]),
         )
     elif row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -126,69 +127,118 @@ def parse_arbiscan_nfts(data_row, _parser, **kwargs):
             data_row.timestamp,
             sell_quantity=1,
             sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
-            wallet=_get_wallet(row_dict["From"]),
+            wallet=get_wallet(row_dict["From"]),
         )
     else:
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
+def parse_optimism_deposits(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
-ARBISCAN_TXNS = DataParser(
-        DataParser.TYPE_EXPLORER,
-        f"{WORKSHEET_NAME} ({WALLET}  Transactions)",
-    ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)",None,"TxnFee(ETH)","TxnFee(USD)","Historical $Price/ETH","Status","ErrCode","Method"],
-        worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_arbiscan,
-        filename_prefix="arbitrum",
+    if row_dict["Token Symbol"].endswith("-LP"):
+        asset = row_dict["Token Symbol"] + "-" + row_dict["Contract Address"][0:10]
+    else:
+        asset = row_dict["Token Symbol"]
+
+    quantity = row_dict["Value"].replace(",", "")
+
+    to = ntpath.basename(kwargs["filename"]).split('-')[1].lower()
+
+    data_row.t_record = TransactionOutRecord(
+        TransactionOutRecord.TYPE_DEPOSIT,
+        data_row.timestamp,
+        buy_quantity=quantity,
+        buy_asset=asset,
+        wallet=get_wallet(to),
     )
 
-ARBISCAN_INT = DataParser(
+def parse_optimism_withdrawals(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    # TODO probably check if status is not failed
+    # if row_dict["Status"]:
+
+    if row_dict["Token Symbol"].endswith("-LP"):
+        asset = row_dict["Token Symbol"] + "-" + row_dict["Contract Address"][0:10]
+    else:
+        asset = row_dict["Token Symbol"]
+
+    quantity = row_dict["Value"].replace(",", "")
+
+    to = ntpath.basename(kwargs["filename"]).split('-')[1].lower()
+
+    data_row.t_record = TransactionOutRecord(
+        TransactionOutRecord.TYPE_WITHDRAWAL,
+        data_row.timestamp,
+        sell_quantity=quantity,
+        sell_asset=asset,
+        wallet=get_wallet(to), # assume same wallet
+    )
+
+
+OPTIMISM_TXNS = DataParser(
+        DataParser.TYPE_EXPLORER,
+        f"{WORKSHEET_NAME} ({WALLET} Transactions)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)", None, "TxnFee(ETH)","TxnFee(USD)","Historical $Price/Eth","Status","ErrCode","Method"],
+        worksheet_name=WORKSHEET_NAME,
+        row_handler=parse_optimism,
+        filename_prefix="optimism",
+)
+
+OPTIMISM_INT = DataParser(
         DataParser.TYPE_EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
-        ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
-         'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(ETH)',
-         'Value_OUT(ETH)', None, 'Historical $Price/ETH', 'Status', 'ErrCode', 'Type'],
+    ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxETH_Value","From","TxTo","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)",None,"Historical $Price/Eth","Status","ErrCode","Type"],
         worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_arbiscan_internal,
-        filename_prefix="arbitrum",
+        row_handler=parse_optimism_internal,
+        filename_prefix="optimism",
 )
 
-ARBISCAN_TOKENS = DataParser(
+OPTIMISM_DEPOSITS = DataParser(
+        DataParser.TYPE_EXPLORER,
+        f"{WORKSHEET_NAME} ({WALLET} Deposits)",
+        ["L1 Deposit Txhash","L2 Txhash","UnixTimestamp","DateTime","Value","Token Name","Token Symbol","Contract Address"],
+        worksheet_name=WORKSHEET_NAME,
+        row_handler=parse_optimism_deposits,
+        filename_prefix="optimism",
+)
+
+OPTIMISM_WITHDRAWALS = DataParser(
+        DataParser.TYPE_EXPLORER,
+        f"{WORKSHEET_NAME} ({WALLET} Withdrawals)",
+        ["L2 Txhash","UnixTimestamp","DateTime","L1 Txhash","Value","Token Name","Token Symbol","Contract Address","Status"],
+        worksheet_name=WORKSHEET_NAME,
+        row_handler=parse_optimism_withdrawals,
+        filename_prefix="optimism",
+)
+
+OPTIMISM_TOKENS = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
+    f"{WORKSHEET_NAME} ({WALLET} Address - ERC20 Token Transfers)",
     [
         "Txhash",
-        "Blockno",  # New field
         "UnixTimestamp",
         "DateTime",
         "From",
         "To",
-        "TokenValue",  # Renamed
-        "USDValueDayOfTx",  # New field
-        "ContractAddress",  # New field
-        "TokenName",
-        "TokenSymbol",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_arbiscan_tokens,
-    filename_prefix="arbitrum"
-)
-
-ARBISCAN_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
-    [
-        "Txhash",
-        "Blockno",  # New field
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
+        "TokenValue",
+        "USDValueDayOfTx",
         "ContractAddress",
-        "TokenId",
         "TokenName",
         "TokenSymbol",
     ],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_arbiscan_nfts,
-    filename_prefix="arbitrum",
+    row_handler=parse_optimism_tokens,
+    filename_prefix="optimism",
+)
+
+OPTIMISM_NFTS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} Address - ERC721 Token Transfers)",
+    ["Txhash","UnixTimestamp","DateTime","From","To","ContractAddress","TokenId","TokenName","TokenSymbol"],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_optimism_nfts,
+    filename_prefix="optimism",
 )

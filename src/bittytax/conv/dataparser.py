@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2019
 
+import ntpath
 import sys
 from datetime import datetime, tzinfo
 from decimal import Decimal
@@ -102,6 +103,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         row_handler: Optional[Union[RowHandler, RowHandler2]] = None,
         all_handler: Optional[Union[AllHandler, AllHandler2]] = None,
         consolidate_type: ConsolidateType = ConsolidateType.PARSER_MATCH,
+        filename_prefix=None,
     ):
         self.p_type = p_type
         self.name = name
@@ -116,6 +118,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         self.args: List[Any] = []
         self.in_header: List[str] = []
         self.in_header_row_num: Optional[int] = None
+        self.filename_prefix = filename_prefix
 
         self.parsers.append(self)
 
@@ -208,7 +211,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         raise CurrencyConversionError(from_currency, config.ccy, timestamp)
 
     @classmethod
-    def match_header(cls, row: List[str], row_num: int) -> "DataParser":
+    def match_header(cls, row: List[str], row_num: int, filename: str) -> "DataParser":
         row = [col.strip() for col in row]
         if config.debug:
             sys.stderr.write(

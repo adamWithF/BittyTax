@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2021
 
-from .etherscan import do_merge_etherscan, TXNS, TOKENS, NFTS, INTERNAL_TXNS
+from .etherscan import _do_merge_etherscan
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.moonscan import moonscan_txns, moonscan_int, WALLET, WORKSHEET_NAME
-from ..parsers.etherscan import etherscan_tokens, etherscan_nfts
+from ..parsers.moonscan import MOONSCAN_TXNS, MOONSCAN_INT, MOONSCAN_TOKENS, MOONSCAN_NFTS, WALLET, WORKSHEET_NAME
 
 STAKE_ADDRESSES = []
 
 def merge_moonscan(data_files):
     # Do same merge as Etherscan
-    merge = do_merge_etherscan(data_files, STAKE_ADDRESSES)
+    merge = _do_merge_etherscan(data_files, STAKE_ADDRESSES)
 
     if merge:
         # Change Etherscan parsers to FantomScan
@@ -32,8 +31,8 @@ def merge_moonscan(data_files):
     return merge
 
 DataMerge("FantomScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MAN, 'obj': moonscan_txns},
-           TOKENS: {'req': DataMerge.OPT, 'obj': etherscan_tokens},
-           NFTS: {'req': DataMerge.OPT, 'obj': etherscan_nfts},
-           INTERNAL_TXNS: {'req': DataMerge.OPT, 'obj': moonscan_int}},
+          {TXNS: {'req': DataMerge.MANDATORY, 'obj': MOONSCAN_TXNS},
+           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_TOKENS},
+           NFTS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_NFTS},
+           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_INT}},
           merge_moonscan)

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2021
 
-from .etherscan import do_merge_etherscan, TXNS, TOKENS, NFTS, INTERNAL_TXNS
+from .etherscan import _do_merge_etherscan
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.ftmscan import fantom_txns, fantom_int, WALLET, WORKSHEET_NAME
-from ..parsers.etherscan import etherscan_tokens, etherscan_nfts
+from ..parsers.ftmscan import FANTOM_TXNS, FANTOM_INT, FANTOM_TOKENS, FANTOM_NFTS, WALLET, WORKSHEET_NAME
 
-STAKE_ADDRESSES = []
+STAKE_ADDRESSES = [
+    "0xFC00FACE00000000000000000000000000000000"
+]
 
 def merge_fantomscan(data_files):
     # Do same merge as Etherscan
-    merge = do_merge_etherscan(data_files, STAKE_ADDRESSES)
+    merge = _do_merge_etherscan(data_files, STAKE_ADDRESSES)
 
     if merge:
         # Change Etherscan parsers to FantomScan
@@ -32,8 +33,8 @@ def merge_fantomscan(data_files):
     return merge
 
 DataMerge("FantomScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MAN, 'obj': fantom_txns},
-           TOKENS: {'req': DataMerge.OPT, 'obj': etherscan_tokens},
-           NFTS: {'req': DataMerge.OPT, 'obj': etherscan_nfts},
-           INTERNAL_TXNS: {'req': DataMerge.OPT, 'obj': fantom_int}},
+          {TXNS: {'req': DataMerge.MANDATORY, 'obj': FANTOM_TXNS},
+           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_TOKENS},
+           NFTS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_NFTS},
+           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_INT}},
           merge_fantomscan)

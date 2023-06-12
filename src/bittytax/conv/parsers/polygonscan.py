@@ -7,39 +7,36 @@ from ..dataparser import DataParser
 from ..out_record import TransactionOutRecord
 from .etherscan import _get_note
 
-WALLET = "Binance Smart Chain"
-WORKSHEET_NAME = "BscScan"
+WALLET = "Polygon chain"
+WORKSHEET_NAME = "PolygonScan"
 
 
-def parse_bscscan(data_row, _parser, **_kwargs):
+def parse_polygonscan(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
-    if row_dict["Status"] == "Error(0)" and row_dict["ErrCode"] == "execution reverted":
-        return
-
     if row_dict["Status"] != "":
         # Failed transactions should not have a Value_OUT
-        row_dict["Value_OUT(BNB)"] = 0
+        row_dict["Value_OUT(MATIC)"] = 0
 
-    if Decimal(row_dict["Value_IN(BNB)"]) > 0:
+    if Decimal(row_dict["Value_IN(MATIC)"]) > 0:
         if row_dict["Status"] == "":
             data_row.t_record = TransactionOutRecord(
                 TransactionOutRecord.TYPE_DEPOSIT,
                 data_row.timestamp,
-                buy_quantity=row_dict["Value_IN(BNB)"],
-                buy_asset="BNB",
+                buy_quantity=row_dict["Value_IN(MATIC)"],
+                buy_asset="MATIC",
                 wallet=_get_wallet(row_dict["To"]),
                 note=_get_note(row_dict),
             )
-    elif Decimal(row_dict["Value_OUT(BNB)"]) > 0:
+    elif Decimal(row_dict["Value_OUT(MATIC)"]) > 0:
         data_row.t_record = TransactionOutRecord(
             TransactionOutRecord.TYPE_WITHDRAWAL,
             data_row.timestamp,
-            sell_quantity=row_dict["Value_OUT(BNB)"],
-            sell_asset="BNB",
-            fee_quantity=row_dict["TxnFee(BNB)"],
-            fee_asset="BNB",
+            sell_quantity=row_dict["Value_OUT(MATIC)"],
+            sell_asset="MATIC",
+            fee_quantity=row_dict["TxnFee(MATIC)"],
+            fee_asset="MATIC",
             wallet=_get_wallet(row_dict["From"]),
             note=_get_note(row_dict),
         )
@@ -47,10 +44,10 @@ def parse_bscscan(data_row, _parser, **_kwargs):
         data_row.t_record = TransactionOutRecord(
             TransactionOutRecord.TYPE_SPEND,
             data_row.timestamp,
-            sell_quantity=row_dict["Value_OUT(BNB)"],
-            sell_asset="BNB",
-            fee_quantity=row_dict["TxnFee(BNB)"],
-            fee_asset="BNB",
+            sell_quantity=row_dict["Value_OUT(MATIC)"],
+            sell_asset="MATIC",
+            fee_quantity=row_dict["TxnFee(MATIC)"],
+            fee_asset="MATIC",
             wallet=_get_wallet(row_dict["From"]),
             note=_get_note(row_dict),
         )
@@ -60,7 +57,7 @@ def _get_wallet(address):
     return f"{WALLET}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 
-def parse_bscscan_internal(data_row, _parser, **_kwargs):
+def parse_polygonscan_internal(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -68,25 +65,25 @@ def parse_bscscan_internal(data_row, _parser, **_kwargs):
     if row_dict["Status"] != "0":
         return
 
-    if Decimal(row_dict["Value_IN(BNB)"]) > 0:
+    if Decimal(row_dict["Value_IN(MATIC)"]) > 0:
         data_row.t_record = TransactionOutRecord(
             TransactionOutRecord.TYPE_DEPOSIT,
             data_row.timestamp,
-            buy_quantity=row_dict["Value_IN(BNB)"],
-            buy_asset="BNB",
+            buy_quantity=row_dict["Value_IN(MATIC)"],
+            buy_asset="MATIC",
             wallet=_get_wallet(row_dict["TxTo"]),
         )
-    elif Decimal(row_dict["Value_OUT(BNB)"]) > 0:
+    elif Decimal(row_dict["Value_OUT(MATIC)"]) > 0:
         data_row.t_record = TransactionOutRecord(
             TransactionOutRecord.TYPE_WITHDRAWAL,
             data_row.timestamp,
-            sell_quantity=row_dict["Value_OUT(BNB)"],
-            sell_asset="BNB",
+            sell_quantity=row_dict["Value_OUT(MATIC)"],
+            sell_asset="MATIC",
             wallet=_get_wallet(row_dict["From"]),
         )
 
 
-def parse_bscscan_tokens(data_row, _parser, **kwargs):
+def parse_polygonscan_tokens(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -120,7 +117,7 @@ def parse_bscscan_tokens(data_row, _parser, **kwargs):
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
 
-def parse_bscscan_nfts(data_row, _parser, **kwargs):
+def parse_polygonscan_nfts(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
@@ -145,9 +142,9 @@ def parse_bscscan_nfts(data_row, _parser, **kwargs):
 
 
 # Tokens and internal transactions have the same header as Etherscan
-BSC_TXNS = DataParser(
+POLYGON_TXNS = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} Transactions)",
+    "PolygonScan (Polygon Transactions)",
     [
         "Txhash",
         "Blockno",
@@ -156,41 +153,42 @@ BSC_TXNS = DataParser(
         "From",
         "To",
         "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
+        "Value_IN(MATIC)",
+        "Value_OUT(MATIC)",
         None,
-        "TxnFee(BNB)",
+        "TxnFee(MATIC)",
         "TxnFee(USD)",
-        "Historical $Price/BNB",
+        "Historical $Price/MATIC",
         "Status",
         "ErrCode",
         "Method",
     ],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan,
-    filename_prefix="bsc",
+    row_handler=parse_polygonscan,
+    filename_prefix="polygon",
 )
 
-BSC_INT = DataParser(
+POLYGON_INT = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)", ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxBNB_Value","From","TxTo","ContractAddress","Value_IN(BNB)","Value_OUT(BNB)", None,"Historical $Price/BNB","Status","ErrCode","Type"],
+    "PolygonScan (Internal Transactions)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxMATIC_Value","From","TxTo","ContractAddress","Value_IN(MATIC)","Value_OUT(MATIC)",None,"Historical $Price/MATIC","Status","ErrCode","Type"],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_internal,
-    filename_prefix="bsc",
+    row_handler=parse_polygonscan_internal,
+    filename_prefix="polygon",
 )
 
-BSC_TOKENS = DataParser(
+POLYGON_TOKENS = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} BEP-20 Tokens)",
+    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","TokenValue","USDValueDayOfTx","ContractAddress","TokenName","TokenSymbol"],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_tokens,
-    filename_prefix="bsc",
+    row_handler=parse_polygonscan_tokens,
+    filename_prefix="polygon",
 )
 
-BSC_NFTS = DataParser(
+POLYGON_NFTS = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
+    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
     [
         "Txhash",
         "Blockno",  # New field
@@ -204,6 +202,6 @@ BSC_NFTS = DataParser(
         "TokenSymbol",
     ],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_nfts,
-    filename_prefix="bsc",
+    row_handler=parse_polygonscan_nfts,
+    filename_prefix="polygon",
 )

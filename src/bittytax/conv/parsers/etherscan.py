@@ -323,6 +323,7 @@ etherscan_txns = DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -349,6 +350,7 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -373,6 +375,7 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -398,6 +401,7 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan,
+    filename_prefix="ethereum",
 )
 
 etherscan_int = DataParser(
@@ -424,6 +428,7 @@ etherscan_int = DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan_internal,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -451,6 +456,7 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     row_handler=parse_etherscan_internal,
+    filename_prefix="ethereum",
 )
 
 etherscan_tokens = DataParser(
@@ -471,6 +477,7 @@ etherscan_tokens = DataParser(
     ],
     worksheet_name="Etherscan",
     all_handler=parse_etherscan_tokens,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -511,6 +518,8 @@ etherscan_nfts = DataParser(
     ],
     worksheet_name="Etherscan",
     all_handler=parse_etherscan_nfts,
+    filename_prefix="ethereum",
+    row_handler=parse_etherscan_tokens,
 )
 
 DataParser(
@@ -530,6 +539,7 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     all_handler=parse_etherscan_nfts,
+    filename_prefix="ethereum",
 )
 
 DataParser(
@@ -548,4 +558,5 @@ DataParser(
     ],
     worksheet_name="Etherscan",
     all_handler=parse_etherscan_nfts,
+    filename_prefix="ethereum",
 )

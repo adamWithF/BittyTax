@@ -2,11 +2,12 @@
 # (c) Nano Nano Ltd 2021
 
 from typing import TYPE_CHECKING, Dict, List
-
 from ...bt_types import FileId
 from ..datamerge import DataMerge, ParserRequired
-from ..parsers.snowtrace import avax_tokens, avax_txns
-from .etherscan import TOKENS, TXNS, _do_merge_etherscan
+from ..out_record import TransactionOutRecord
+from ..parsers.snowtrace import avax_int, avax_txns, avax_tokens, avax_nfts
+
+from .etherscan import _do_merge_etherscan
 
 STAKE_ADDRESSES: List[str] = []
 
@@ -24,6 +25,8 @@ DataMerge(
     {
         TXNS: {"req": ParserRequired.MANDATORY, "obj": avax_txns},
         TOKENS: {"req": ParserRequired.MANDATORY, "obj": avax_tokens},
+        NFTS: {"req": DataMerge.OPTIONAL, "obj": avax_nfts},
+        INTERNAL_TXNS: {"req": DataMerge.OPTIONAL, "obj": avax_int},
     },
     merge_snowtrace,
 )

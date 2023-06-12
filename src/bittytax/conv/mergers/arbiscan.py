@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-# (c) Nano Nano Ltd 2021
+# (c) Nano Nano Ltd 2023
 
-from .etherscan import do_merge_etherscan, TXNS, TOKENS, NFTS, INTERNAL_TXNS
+from .etherscan import _do_merge_etherscan
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.arbiscan import arbiscan_txns, arbiscan_int, WALLET, WORKSHEET_NAME
-from ..parsers.etherscan import etherscan_tokens, etherscan_nfts
+from ..parsers.arbiscan import ARBISCAN_TXNS, ARBISCAN_TOKENS, ARBISCAN_NFTS, ARBISCAN_INT, WALLET, WORKSHEET_NAME
 
 STAKE_ADDRESSES = []
 
 def merge_arbiscan(data_files):
     # Do same merge as Etherscan
-    merge = do_merge_etherscan(data_files, STAKE_ADDRESSES)
+    merge = _do_merge_etherscan(data_files, STAKE_ADDRESSES)
 
     if merge:
         # Change Etherscan parsers to FantomScan
@@ -32,8 +31,8 @@ def merge_arbiscan(data_files):
     return merge
 
 DataMerge("ArbiScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MAN, 'obj': arbiscan_txns},
-           TOKENS: {'req': DataMerge.OPT, 'obj': etherscan_tokens},
-           NFTS: {'req': DataMerge.OPT, 'obj': etherscan_nfts},
-           INTERNAL_TXNS: {'req': DataMerge.OPT, 'obj': arbiscan_int}},
+          {TXNS: {'req': DataMerge.MANDATORY, 'obj': ARBISCAN_TXNS},
+           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_TOKENS},
+           NFTS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_NFTS},
+           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_INT}},
           merge_arbiscan)

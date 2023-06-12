@@ -3,18 +3,18 @@
 
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.bscscan import BSC_INT, BSC_TXNS, BSC_NFTS, BSC_TOKENS, WALLET, WORKSHEET_NAME
+from ..parsers.polygonscan import POLYGON_INT, POLYGON_TXNS, POLYGON_TOKENS, POLYGON_NFTS, WALLET, WORKSHEET_NAME
 from .etherscan import _do_merge_etherscan
 
-STAKE_ADDRESSES = ["0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"]  # PancakeSwap
+STAKE_ADDRESSES = []
 
 
-def merge_bscscan(data_files):
+def merge_polygonscan(data_files):
     # Do same merge as Etherscan
     merge = _do_merge_etherscan(data_files, STAKE_ADDRESSES)
 
     if merge:
-        # Change Etherscan parsers to BscScan
+        # Change Etherscan parsers to PolygonScan
         if TOKENS in data_files:
             data_files[TOKENS].parser.worksheet_name = WORKSHEET_NAME
             for data_row in data_files[TOKENS].data_rows:
@@ -33,12 +33,12 @@ def merge_bscscan(data_files):
 
 
 DataMerge(
-    "BscScan fees & multi-token transactions",
+    "PolygonScan fees & multi-token transactions",
     {
-        TXNS: {"req": DataMerge.MANDATORY, "obj": BSC_TXNS},
-        TOKENS: {"req": DataMerge.OPTIONAL, "obj": BSC_TOKENS},
-        NFTS: {"req": DataMerge.OPTIONAL, "obj": BSC_NFTS},
-        INTERNAL_TXNS: {"req": DataMerge.OPTIONAL, "obj": BSC_INT},
+        TXNS: {"req": DataMerge.MANDATORY, "obj": POLYGON_TXNS},
+        TOKENS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_TOKENS},
+        NFTS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_NFTS},
+        INTERNAL_TXNS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_INT},
     },
-    merge_bscscan,
+    merge_polygonscan,
 )

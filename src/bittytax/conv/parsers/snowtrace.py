@@ -16,8 +16,8 @@ from .etherscan import _get_note
 if TYPE_CHECKING:
     from ..datarow import DataRow
 
-WALLET = "AVAX"
-
+WALLET = "Avalanche"
+WORKSHEET_NAME = "Snowtrace"
 
 def parse_snowtrace(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[ParserArgs]) -> None:
     row_dict = data_row.row_dict
@@ -108,38 +108,80 @@ def parse_snowtrace_tokens(
     else:
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
+def parse_snowtrace_tokens(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
+    if row_dict["TokenSymbol"].endswith("-LP"):
+        asset = row_dict["TokenSymbol"] + "-" + row_dict["ContractAddress"][0:10]
+    else:
+        asset = row_dict["TokenSymbol"]
+
+    if "Value" in row_dict:
+        quantity = row_dict["Value"].replace(",", "")
+    else:
+        quantity = row_dict["TokenValue"].replace(",", "")
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=quantity,
+            buy_asset=asset,
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=quantity,
+            sell_asset=asset,
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+def parse_snowtrace_nfts(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=1,
+            buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=1,
+            sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+    # ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(AVAX)","Value_OUT(AVAX)",None,"TxnFee(AVAX)","TxnFee(USD)","Historical $Price/AVAX","Status","ErrCode","Method"],
+
+
+# Tokens and internal transactions have the same header as Etherscan
 avax_txns = DataParser(
-    ParserType.EXPLORER,
-    "Snowtrace (Transactions)",
-    [
-        "Transaction Hash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime (UTC)",
-        "From",
-        "To",
-        "ContractAddress",
-        "Value_IN(ETH)",
-        "Value_OUT(ETH)",
-        "CurrentValue/Eth",
-        "TxnFee(ETH)",
-        "TxnFee(USD)",
-        "Historical $Price/Eth",
-        "Status",
-        "ErrCode",
-        "Method",
-        "ChainId",
-        "Chain",
-        "Value(ETH)",
-    ],
-    worksheet_name="Snowtrace",
+    DataParser.EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} Transactions)",
+    ["Transaction Hash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(AVAX)","Value_OUT(AVAX)",CurrentValue/AVAX,"TxnFee(AVAX)","TxnFee(USD)","Historical $Price/AVAX","Status","ErrCode","Method", "ChainId", "Chain", "Value(AVAX)"],
+    worksheet_name=WORKSHEET_NAME,
     row_handler=parse_snowtrace,
+    filename_prefix="avalanche",
 )
 
 DataParser(
     ParserType.EXPLORER,
-    "Snowtrace (Transactions)",
+    f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     [
         "Transaction Hash",
         "Blockno",
@@ -148,27 +190,28 @@ DataParser(
         "From",
         "To",
         "ContractAddress",
-        "Value_IN(ETH)",
-        "Value_OUT(ETH)",
-        "CurrentValue/Eth",
-        "TxnFee(ETH)",
+        "Value_IN(AVAX)",
+        "Value_OUT(AVAX)",
+        "CurrentValue/AVAX",
+        "TxnFee(AVAX)",
         "TxnFee(USD)",
-        "Historical $Price/Eth",
+        "Historical $Price/AVAX",
         "Status",
         "ErrCode",
         "Method",
         "ChainId",
         "Chain",
-        "Value(ETH)",
+        "Value(AVAX)",
         "PrivateNote",
     ],
-    worksheet_name="Snowtrace",
+    worksheet_name=WORKSHEET_NAME,
     row_handler=parse_snowtrace,
+    filename_prefix="avalanche",
 )
 
 avax_tokens = DataParser(
     ParserType.EXPLORER,
-    "Snowtrace (Token Transfers ERC-20)",
+    f"{WORKSHEET_NAME} ({WALLET} Token Transfers ERC-20)",
     [
         "chain_id",
         "tx_hash",
@@ -182,6 +225,37 @@ avax_tokens = DataParser(
         "token_name",
         "token_symbol",
     ],
-    worksheet_name="Snowtrace",
+    worksheet_name=WORKSHEET_NAME,
     row_handler=parse_snowtrace_tokens,
+    filename_prefix="avalanche",
+)
+
+avax_int = DataParser(
+    DataParser.EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxAVAX_Value","From","TxTo","ContractAddress","Value_IN(AVAX)","Value_OUT(AVAX)","CurrentValue @ $11.51/AVAX","Historical $Price/AVAX","Status","ErrCode","Type"],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_snowtrace_internal,
+    filename_prefix="avalanche",
+)
+
+
+avax_nfts = DataParser(
+    DataParser.EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "ContractAddress",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_snowtrace_nfts,
+    filename_prefix="avalanche",
 )
