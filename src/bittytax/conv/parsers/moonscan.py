@@ -69,44 +69,123 @@ def parse_moonscan_internal(data_row, _parser, **_kwargs):
                                                  sell_asset="MOVR",
                                                  wallet=get_wallet(row_dict['From']))
 
-moonscan_txns = DataParser(
+
+def parse_moonscan_tokens(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["TokenSymbol"].endswith("-LP"):
+        asset = row_dict["TokenSymbol"] + "-" + row_dict["ContractAddress"][0:10]
+    else:
+        asset = row_dict["TokenSymbol"]
+
+    if "Value" in row_dict:
+        quantity = row_dict["Value"].replace(",", "")
+    else:
+        quantity = row_dict["TokenValue"].replace(",", "")
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=quantity,
+            buy_asset=asset,
+            wallet=get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=quantity,
+            sell_asset=asset,
+            wallet=get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+def parse_moonscan_nfts(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=1,
+            buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=1,
+            sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+MOONSCAN_TXNS = DataParser(
         DataParser.TYPE_EXPLORER,
-        "MoonScan (MOVR Transactions)",
+        f"{WORKSHEET_NAME} ({WALLET} Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
          'Value_IN(MOVR)', 'Value_OUT(MOVR)', None, 'TxnFee(MOVR)', 'TxnFee(USD)',
          'Historical $Price/MOVR', 'Status', 'ErrCode', 'Method'],
         worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_moonscan)
+        row_handler=parse_moonscan,
+        filename_prefix="moonriver",
+)
 
-# DataParser(DataParser.TYPE_EXPLORER,
-#            "FtmScan (MOVR Transactions)",
-#            ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
-#             'Value_IN(MOVR)', 'Value_OUT(MOVR)', None, 'TxnFee(MOVR)', 'TxnFee(USD)',
-#             'Historical $Price/MOVR', 'Status', 'ErrCode', 'Method', 'PrivateNote'],
-#            worksheet_name=WORKSHEET_NAME,
-#            row_handler=parse_moonscan)
-
-moonscan_int = DataParser(
+MOONSCAN_INT = DataParser(
         DataParser.TYPE_EXPLORER,
-        "FtmScan (MOVR Internal Transactions)",
+        f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
         ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo",
          "ParentTxMOVR_Value","From","TxTo","ContractAddress","Value_IN(MOVR)","Value_OUT(MOVR)",
          None,"Historical $Price/MOVR","Status","ErrCode","Type"],
         worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_moonscan_internal)
+        row_handler=parse_moonscan_internal,
+        filename_prefix="moonriver",
+)
 
-# Same header as Etherscan
-#DataParser(DataParser.TYPE_EXPLORER,
-#           "FtmScan (ERC-20 Tokens)",
-#           ['Txhash', 'UnixTimestamp', 'DateTime', 'From', 'To', 'Value', 'ContractAddress',
-#            'TokenName', 'TokenSymbol'],
-#           worksheet_name=WORKSHEET_NAME,
-#           row_handler=parse_fantomscan_tokens)
+MOONSCAN_TOKENS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "TokenValue",  # Renamed
+        "USDValueDayOfTx",  # New field
+        "ContractAddress",  # New field
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_moonscan_tokens,
+    filename_prefix="moonriver",
+)
 
-# Same header as Etherscan
-#DataParser(DataParser.TYPE_EXPLORER,
-#           "FtmScan (ERC-721 NFTs)",
-#           ['Txhash', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress', 'TokenId',
-#            'TokenName', 'TokenSymbol'],
-#           worksheet_name=WORKSHEET_NAME,
-#           row_handler=parse_fantomscan_nfts)
+MOONSCAN_NFTS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "ContractAddress",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_moonscan_nfts,
+    filename_prefix="moonriver",
+)

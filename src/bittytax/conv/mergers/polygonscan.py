@@ -3,8 +3,7 @@
 
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.etherscan import ETHERSCAN_NFTS, ETHERSCAN_TOKENS
-from ..parsers.polygonscan import MATIC_INT, MATIC_TXNS, WALLET, WORKSHEET_NAME
+from ..parsers.polygonscan import POLYGON_INT, POLYGON_TXNS, POLYGON_TOKENS, POLYGON_NFTS, WALLET, WORKSHEET_NAME
 from .etherscan import INTERNAL_TXNS, NFTS, TOKENS, TXNS, _do_merge_etherscan
 
 STAKE_ADDRESSES = []
@@ -36,10 +35,10 @@ def merge_polygonscan(data_files):
 DataMerge(
     "PolygonScan fees & multi-token transactions",
     {
-        TXNS: {"req": DataMerge.MAN, "obj": MATIC_TXNS},
-        TOKENS: {"req": DataMerge.OPT, "obj": ETHERSCAN_TOKENS},
-        NFTS: {"req": DataMerge.OPT, "obj": ETHERSCAN_NFTS},
-        INTERNAL_TXNS: {"req": DataMerge.OPT, "obj": MATIC_INT},
+        TXNS: {"req": DataMerge.MAN, "obj": POLYGON_TXNS},
+        TOKENS: {"req": DataMerge.OPT, "obj": POLYGON_TOKENS},
+        NFTS: {"req": DataMerge.OPT, "obj": POLYGON_NFTS},
+        INTERNAL_TXNS: {"req": DataMerge.OPT, "obj": POLYGON_INT},
     },
     merge_polygonscan,
 )

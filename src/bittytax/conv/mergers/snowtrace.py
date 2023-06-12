@@ -3,8 +3,7 @@
 
 from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
-from ..parsers.etherscan import ETHERSCAN_NFTS, ETHERSCAN_TOKENS
-from ..parsers.snowtrace import AVAX_INT, AVAX_TXNS, WALLET, WORKSHEET_NAME
+from ..parsers.snowtrace import AVAX_INT, AVAX_TXNS, AVAX_TOKENS, AVAX_NFTS, WALLET, WORKSHEET_NAME
 from .etherscan import INTERNAL_TXNS, NFTS, TOKENS, TXNS, _do_merge_etherscan
 
 STAKE_ADDRESSES = []
@@ -37,8 +36,8 @@ DataMerge(
     "SnowTrace fees & multi-token transactions",
     {
         TXNS: {"req": DataMerge.MAN, "obj": AVAX_TXNS},
-        TOKENS: {"req": DataMerge.OPT, "obj": ETHERSCAN_TOKENS},
-        NFTS: {"req": DataMerge.OPT, "obj": ETHERSCAN_NFTS},
+        TOKENS: {"req": DataMerge.OPT, "obj": AVAX_TOKENS},
+        NFTS: {"req": DataMerge.OPT, "obj": AVAX_NFTS},
         INTERNAL_TXNS: {"req": DataMerge.OPT, "obj": AVAX_INT},
     },
     merge_snowtrace,

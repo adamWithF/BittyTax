@@ -52,6 +52,7 @@ from . import (
     near,
     nexo,
     okx,
+    optimism,
     poloniex,
     polygonscan,
     qtrade,

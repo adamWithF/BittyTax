@@ -15,6 +15,9 @@ def parse_bscscan(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
 
+    if row_dict["Status"] == "Error(0)" and row_dict["ErrCode"] == "execution reverted":
+        return
+
     if row_dict["Status"] != "":
         # Failed transactions should not have a Value_OUT
         row_dict["Value_OUT(BNB)"] = 0
@@ -144,56 +147,7 @@ def parse_bscscan_nfts(data_row, _parser, **kwargs):
 # Tokens and internal transactions have the same header as Etherscan
 BSC_TXNS = DataParser(
     DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
-        None,
-        "TxnFee(BNB)",
-        "TxnFee(USD)",
-        "Historical $Price/BNB",
-        "Status",
-        "ErrCode",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan,
-)
-
-DataParser(
-    DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
-        None,
-        "TxnFee(BNB)",
-        "TxnFee(USD)",
-        "Historical $Price/BNB",
-        "Status",
-        "ErrCode",
-        "PrivateNote",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan,
-)
-
-DataParser(
-    DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Transactions)",
+    f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     [
         "Txhash",
         "Blockno",
@@ -214,128 +168,29 @@ DataParser(
     ],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan,
-)
-
-DataParser(
-    DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
-        None,
-        "TxnFee(BNB)",
-        "TxnFee(USD)",
-        "Historical $Price/BNB",
-        "Status",
-        "ErrCode",
-        "Method",
-        "PrivateNote",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan,
+    filename_prefix="bsc",
 )
 
 BSC_INT = DataParser(
     DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Internal Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "ParentTxFrom",
-        "ParentTxTo",
-        "ParentTxETH_Value",
-        "From",
-        "TxTo",
-        "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
-        None,
-        "Historical $Price/BNB",
-        "Status",
-        "ErrCode",
-        "Type",
-    ],
+    f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)", ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxBNB_Value","From","TxTo","ContractAddress","Value_IN(BNB)","Value_OUT(BNB)", None,"Historical $Price/BNB","Status","ErrCode","Type"],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan_internal,
+    filename_prefix="bsc",
 )
 
-DataParser(
+BSC_TOKENS = DataParser(
     DataParser.TYPE_EXPLORER,
-    "BscScan (BSC Internal Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "ParentTxFrom",
-        "ParentTxTo",
-        "ParentTxETH_Value",
-        "From",
-        "TxTo",
-        "ContractAddress",
-        "Value_IN(BNB)",
-        "Value_OUT(BNB)",
-        None,
-        "Historical $Price/BNB",
-        "Status",
-        "ErrCode",
-        "Type",
-        "PrivateNote",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_internal,
-)
-
-BSCSCAN_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
-    [
-        "Txhash",
-        "Blockno",  # New field
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "TokenValue",  # Renamed
-        "USDValueDayOfTx",  # New field
-        "ContractAddress",  # New field
-        "TokenName",
-        "TokenSymbol",
-    ],
+    f"{WORKSHEET_NAME} ({WALLET} BEP-20 Tokens)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","TokenValue","USDValueDayOfTx","ContractAddress","TokenName","TokenSymbol"],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan_tokens,
+    filename_prefix="bsc",
 )
 
-DataParser(
+BSC_NFTS = DataParser(
     DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
-    [
-        "Txhash",
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "Value",
-        "ContractAddress",
-        "TokenName",
-        "TokenSymbol",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_tokens,
-)
-
-BSCSCAN_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
+    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
     [
         "Txhash",
         "Blockno",  # New field
@@ -350,22 +205,5 @@ BSCSCAN_NFTS = DataParser(
     ],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan_nfts,
-)
-
-DataParser(
-    DataParser.TYPE_EXPLORER,
-    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
-    [
-        "Txhash",
-        "UnixTimestamp",
-        "DateTime",
-        "From",
-        "To",
-        "ContractAddress",
-        "TokenId",
-        "TokenName",
-        "TokenSymbol",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_bscscan_nfts,
+    filename_prefix="bsc",
 )

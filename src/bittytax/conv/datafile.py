@@ -107,7 +107,7 @@ class DataFile:
     @classmethod
     def read_worksheet_xlsx(cls, worksheet, filename, args):
         reader = cls.get_cell_values_xlsx(worksheet.rows)
-        parser = cls.get_parser(reader)
+        parser = cls.get_parser(reader, filename)
 
         if parser is None:
             raise DataFormatUnrecognised(filename, worksheet.title)
@@ -149,7 +149,7 @@ class DataFile:
     @classmethod
     def read_worksheet_xls(cls, worksheet, datemode, filename, args):
         reader = cls.get_cell_values_xls(worksheet.get_rows(), datemode)
-        parser = cls.get_parser(reader)
+        parser = cls.get_parser(reader, filename)
 
         if parser is None:
             raise DataFormatUnrecognised(filename, worksheet.name)
@@ -212,7 +212,7 @@ class DataFile:
     @classmethod
     def read_csv(cls, filename, args):
         for reader in cls.read_csv_with_delimiter(filename):
-            parser = cls.get_parser(reader)
+            parser = cls.get_parser(reader, filename)
 
             if parser is not None:
                 sys.stderr.write(
@@ -258,12 +258,12 @@ class DataFile:
             cls.data_files_ordered.append(data_file)
 
     @staticmethod
-    def get_parser(reader):
+    def get_parser(reader, filename):
         parser = None
         # Header might not be on first line
         for row in range(8):
             try:
-                parser = DataParser.match_header(next(reader), row)
+                parser = DataParser.match(next(reader), row, filename)
             except KeyError:
                 continue
             except StopIteration:

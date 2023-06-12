@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2019
 
+import ntpath
 import sys
 from datetime import datetime
 from decimal import Decimal
@@ -47,6 +48,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         deprecated=None,
         row_handler=None,
         all_handler=None,
+        filename_prefix=None,
     ):
         self.p_type = p_type
         self.name = name
@@ -56,6 +58,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         self.delimiter = delimiter
         self.row_handler = row_handler
         self.all_handler = all_handler
+        self.filename_prefix = filename_prefix
         self.args = []
         self.in_header = None
         self.in_header_row_num = None
@@ -135,7 +138,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
         return value_in_ccy
 
     @classmethod
-    def match_header(cls, row, row_num):
+    def match(cls, row, row_num, filename):
         row = [col.strip() for col in row]
         if config.debug:
             sys.stderr.write(
@@ -143,19 +146,24 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
             )
 
         parsers_reduced = [p for p in cls.parsers if len(p.header) == len(row)]
+
+        # print("parsers", [p.name for p in parsers_reduced])
+
         for parser in parsers_reduced:
-            match = False
+            matched = False
             for i, row_field in enumerate(row):
                 if callable(parser.header[i]):
-                    match = parser.header[i](row_field)
-                    parser.args.append(match)
+                    matched = parser.header[i](row_field)
+                    parser.args.append(matched)
                 elif parser.header[i] is not None:
-                    match = row_field == parser.header[i]
+                    matched = row_field == parser.header[i]
 
-                if not match:
+                if not matched:
                     break
 
-            if match:
+            # print("filename", ntpath.basename(filename))
+
+            if matched and (not parser.filename_prefix or ntpath.basename(filename).startswith(parser.filename_prefix)):
                 if config.debug:
                     sys.stderr.write(
                         f"{Fore.CYAN}header: row[{row_num + 1}] "

@@ -69,44 +69,123 @@ def parse_fantomscan_internal(data_row, _parser, **_kwargs):
                                                  sell_asset="FTM",
                                                  wallet=get_wallet(row_dict['From']))
 
-fantom_txns = DataParser(
+def parse_ftmscan_tokens(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["TokenSymbol"].endswith("-LP"):
+        asset = row_dict["TokenSymbol"] + "-" + row_dict["ContractAddress"][0:10]
+    else:
+        asset = row_dict["TokenSymbol"]
+
+    if "Value" in row_dict:
+        quantity = row_dict["Value"].replace(",", "")
+    else:
+        quantity = row_dict["TokenValue"].replace(",", "")
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=quantity,
+            buy_asset=asset,
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=quantity,
+            sell_asset=asset,
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+def parse_ftmscan_nfts(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=1,
+            buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=1,
+            sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+FANTOM_TXNS = DataParser(
         DataParser.TYPE_EXPLORER,
-        "FtmScan (FTM Transactions)",
+        f"{WORKSHEET_NAME} ({WALLET} Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
          'Value_IN(FTM)', 'Value_OUT(FTM)', None, 'TxnFee(FTM)', 'TxnFee(USD)',
          'Historical $Price/FTM', 'Status', 'ErrCode', 'Method'],
         worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_fantomscan)
+        row_handler=parse_fantomscan,
+        filename_prefix="fantom",
+)
 
-DataParser(DataParser.TYPE_EXPLORER,
-           "FtmScan (FTM Transactions)",
-           ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
-            'Value_IN(FTM)', 'Value_OUT(FTM)', None, 'TxnFee(FTM)', 'TxnFee(USD)',
-            'Historical $Price/FTM', 'Status', 'ErrCode', 'Method', 'PrivateNote'],
-           worksheet_name=WORKSHEET_NAME,
-           row_handler=parse_fantomscan)
-
-fantom_int = DataParser(
+FANTOM_INT = DataParser(
         DataParser.TYPE_EXPLORER,
-        "FtmScan (FTM Internal Transactions)",
+        f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
          'ParentTxFTM_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(FTM)',
          'Value_OUT(FTM)', None, 'Historical $Price/FTM', 'Status', 'ErrCode', 'Type'],
         worksheet_name=WORKSHEET_NAME,
-        row_handler=parse_fantomscan_internal)
+        row_handler=parse_fantomscan_internal,
+        filename_prefix="fantom",
+)
 
-# Same header as Etherscan
-#DataParser(DataParser.TYPE_EXPLORER,
-#           "FtmScan (ERC-20 Tokens)",
-#           ['Txhash', 'UnixTimestamp', 'DateTime', 'From', 'To', 'Value', 'ContractAddress',
-#            'TokenName', 'TokenSymbol'],
-#           worksheet_name=WORKSHEET_NAME,
-#           row_handler=parse_fantomscan_tokens)
+FANTOM_TOKENS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "TokenValue",  # Renamed
+        "USDValueDayOfTx",  # New field
+        "ContractAddress",  # New field
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_ftmscan_tokens,
+    filename_prefix="fantom",
+)
 
-# Same header as Etherscan
-#DataParser(DataParser.TYPE_EXPLORER,
-#           "FtmScan (ERC-721 NFTs)",
-#           ['Txhash', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress', 'TokenId',
-#            'TokenName', 'TokenSymbol'],
-#           worksheet_name=WORKSHEET_NAME,
-#           row_handler=parse_fantomscan_nfts)
+FANTOM_NFTS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
+    [
+        "Txhash",
+        "Blockno",  # New field
+        "UnixTimestamp",
+        "DateTime",
+        "From",
+        "To",
+        "ContractAddress",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
+    ],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_ftmscan_nfts,
+    filename_prefix="fantom",
+)

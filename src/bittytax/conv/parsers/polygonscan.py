@@ -83,10 +83,68 @@ def parse_polygonscan_internal(data_row, _parser, **_kwargs):
         )
 
 
+def parse_polygonscan_tokens(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["TokenSymbol"].endswith("-LP"):
+        asset = row_dict["TokenSymbol"] + "-" + row_dict["ContractAddress"][0:10]
+    else:
+        asset = row_dict["TokenSymbol"]
+
+    if "Value" in row_dict:
+        quantity = row_dict["Value"].replace(",", "")
+    else:
+        quantity = row_dict["TokenValue"].replace(",", "")
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=quantity,
+            buy_asset=asset,
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=quantity,
+            sell_asset=asset,
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
+def parse_polygonscan_nfts(data_row, _parser, **kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["UnixTimestamp"]))
+
+    if row_dict["To"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=1,
+            buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["To"]),
+        )
+    elif row_dict["From"].lower() in kwargs["filename"].lower():
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=1,
+            sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
+            wallet=_get_wallet(row_dict["From"]),
+        )
+    else:
+        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+
+
 # Tokens and internal transactions have the same header as Etherscan
-MATIC_TXNS = DataParser(
+POLYGON_TXNS = DataParser(
     DataParser.TYPE_EXPLORER,
-    "PolygonScan (MATIC Transactions)",
+    "PolygonScan (Polygon Transactions)",
     [
         "Txhash",
         "Blockno",
@@ -107,83 +165,43 @@ MATIC_TXNS = DataParser(
     ],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_polygonscan,
+    filename_prefix="polygon",
 )
 
-DataParser(
+POLYGON_INT = DataParser(
     DataParser.TYPE_EXPLORER,
-    "PolygonScan (MATIC Transactions)",
+    "PolygonScan (Internal Transactions)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxMATIC_Value","From","TxTo","ContractAddress","Value_IN(MATIC)","Value_OUT(MATIC)",None,"Historical $Price/MATIC","Status","ErrCode","Type"],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_polygonscan_internal,
+    filename_prefix="polygon",
+)
+
+POLYGON_TOKENS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-20 Tokens)",
+    ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","TokenValue","USDValueDayOfTx","ContractAddress","TokenName","TokenSymbol"],
+    worksheet_name=WORKSHEET_NAME,
+    row_handler=parse_polygonscan_tokens,
+    filename_prefix="polygon",
+)
+
+POLYGON_NFTS = DataParser(
+    DataParser.TYPE_EXPLORER,
+    f"{WORKSHEET_NAME} (ERC-721 NFTs)",
     [
         "Txhash",
-        "Blockno",
+        "Blockno",  # New field
         "UnixTimestamp",
         "DateTime",
         "From",
         "To",
         "ContractAddress",
-        "Value_IN(MATIC)",
-        "Value_OUT(MATIC)",
-        None,
-        "TxnFee(MATIC)",
-        "TxnFee(USD)",
-        "Historical $Price/MATIC",
-        "Status",
-        "ErrCode",
-        "Method",
-        "PrivateNote",
+        "TokenId",
+        "TokenName",
+        "TokenSymbol",
     ],
     worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_polygonscan,
-)
-
-MATIC_INT = DataParser(
-    DataParser.TYPE_EXPLORER,
-    "PolygonScan (MATIC Internal Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "ParentTxFrom",
-        "ParentTxTo",
-        "ParentTxETH_Value",
-        "From",
-        "TxTo",
-        "ContractAddress",
-        "Value_IN(MATIC)",
-        "Value_OUT(MATIC)",
-        None,
-        "Historical $Price/MATIC",
-        "Status",
-        "ErrCode",
-        "Type",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_polygonscan_internal,
-)
-
-DataParser(
-    DataParser.TYPE_EXPLORER,
-    "PolygonScan (MATIC Internal Transactions)",
-    [
-        "Txhash",
-        "Blockno",
-        "UnixTimestamp",
-        "DateTime",
-        "ParentTxFrom",
-        "ParentTxTo",
-        "ParentTxETH_Value",
-        "From",
-        "TxTo",
-        "ContractAddress",
-        "Value_IN(MATIC)",
-        "Value_OUT(MATIC)",
-        None,
-        "Historical $Price/MATIC",
-        "Status",
-        "ErrCode",
-        "Type",
-        "PrivateNote",
-    ],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_polygonscan_internal,
+    row_handler=parse_polygonscan_nfts,
+    filename_prefix="polygon",
 )
