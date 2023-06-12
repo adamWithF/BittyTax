@@ -9,7 +9,7 @@ from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser
 
 WALLET = "Terra"
-WORKSHEET_NAME = "Terra"
+WORKSHEET_NAME = "Terra StakeTax"
 
 def parse_terra(data_row, _parser, **_kwargs):
     row_dict = data_row.row_dict
