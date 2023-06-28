@@ -182,10 +182,6 @@ def parse_subscan(data_row, _parser, **kwargs):
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])
 
-def get_wallet_address(filename):
-    return filename.split('-')[0]
-
-
 POLKADOT_TXNS = DataParser(
     DataParser.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Transfer History)",
