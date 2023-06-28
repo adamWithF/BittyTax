@@ -7,9 +7,18 @@ from ..parsers.bscscan import BSC_INT, BSC_TXNS, BSC_NFTS, BSC_TOKENS, WALLET, W
 from .etherscan import _do_merge_etherscan
 
 STAKE_ADDRESSES = [
-    "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", # PancakeSwap
-    # "0x5a55Fce6F6aCB2B1b20514964301Db4f37028C81", # APE Swap LP
-    "0xcf0febd3f17cef5b47b0cd257acf6025c5bff3b7", # APE Swap router
+    "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", # CAKE
+    "0x603c7f932ED1fc6575303D8Fb018fDCBb0f39a95", # APE BANANA
+    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", # WBNB
+    "0xC9849E6fdB743d08fAeE3E34dd2D1bc69EA11a51", # BUNNY
+    "0x3Fcca8648651E5b974DD6d3e50F61567779772A8", # POTS
+    "0xd9025e25bb6cf39f8c926a704039d2dd51088063", # CYT
+    "0x8f0528ce5ef7b51152a59745befdd91d97091d2f", # ALPACA
+    "0xfa363022816abf82f18a9c2809dcd2bb393f6ac5", # HONEY
+    "0x14016e85a25aeb13065688cafb43044c2ef86784", # TUSDT
+    "0xe9e7cea3dedca5984780bafc599bd69add087d56", # BUSD
+    "0x55d398326f99059ff775485246999027b3197955", # USDT
+    "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", # USDC
 ]
 
 def merge_bscscan(data_files):

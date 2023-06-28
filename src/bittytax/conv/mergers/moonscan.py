@@ -6,7 +6,9 @@ from ..datamerge import DataMerge
 from ..out_record import TransactionOutRecord
 from ..parsers.moonscan import MOONSCAN_TXNS, MOONSCAN_INT, MOONSCAN_TOKENS, MOONSCAN_NFTS, WALLET, WORKSHEET_NAME
 
-STAKE_ADDRESSES = []
+STAKE_ADDRESSES = [
+    "0x98878b06940ae243284ca214f92bb71a2b032b8a", # MOVR
+]
 
 def merge_moonscan(data_files):
     # Do same merge as Etherscan
