@@ -22,8 +22,9 @@ if TYPE_CHECKING:
 
 PRECISION = Decimal("0." + "0" * 18)
 
-WALLET = "Ethereum"
 
+def get_wallet(row_dict, filename):
+    return f"{row_dict['Chain']}-{filename.lower().split('-')[1][0:TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 def parse_zerion(
     data_rows: List["DataRow"], parser: DataParser, **_kwargs: Unpack[ParserArgs]
@@ -42,7 +43,7 @@ def parse_zerion(
             continue
 
         try:
-            _parse_zerion_row(data_rows, parser, data_row, row_index)
+            _parse_zerion_row(data_rows, parser, data_row, row_index, get_wallet(row_dict, kwargs["filename"]))
         except DataRowError as e:
             data_row.failure = e
         except (ValueError, ArithmeticError) as e:
@@ -52,9 +53,7 @@ def parse_zerion(
             data_row.failure = e
 
 
-def _parse_zerion_row(
-    data_rows: List["DataRow"], parser: DataParser, data_row: "DataRow", row_index: int
-) -> None:
+def _parse_zerion_row(data_rows: List["DataRow"], parser: DataParser, data_row: "DataRow", row_index: int, wallet) -> None:
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(
         row_dict["Date"] + " " + row_dict["Time"], tz=config.local_timezone
@@ -79,7 +78,7 @@ def _parse_zerion_row(
             fee_quantity=fee_quantity,
             fee_asset=fee_asset,
             fee_value=fee_value,
-            wallet=WALLET,
+            wallet,
         )
         return
 
@@ -87,9 +86,9 @@ def _parse_zerion_row(
     t_ins = [t for t in changes if t["type"] == "in"]
     t_outs = [t for t in changes if t["type"] == "out"]
 
-    if row_dict["Accounting Type"] == "Income":
+    if row_dict["Transaction Type"] == "Income":
         if len(t_ins) > 1:
-            _do_zerion_multi_deposit(data_row, data_rows, row_index, t_ins)
+            _do_zerion_multi_deposit(data_row, data_rows, row_index, t_ins, wallet)
         else:
             buy_quantity, buy_asset, buy_value = _get_data(
                 data_row,
@@ -109,11 +108,11 @@ def _parse_zerion_row(
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet=WALLET,
+                wallet,
             )
-    elif row_dict["Accounting Type"] == "Spend":
+    elif row_dict["Transaction Type"] == "execute":
         if len(t_outs) > 1:
-            _do_zerion_multi_withdrawal(data_row, data_rows, row_index, t_outs)
+            _do_zerion_multi_withdrawal(data_row, data_rows, row_index, t_outs, wallet)
         else:
             sell_quantity, sell_asset, sell_value = _get_data(
                 data_row,
@@ -141,15 +140,15 @@ def _parse_zerion_row(
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet=WALLET,
+                wallet,
             )
-    elif row_dict["Accounting Type"] == "Trade":
+    elif row_dict["Transaction Type"] == "trade":
         if len(t_ins) == 1:
             # Multi-sell or normal Trade
-            _do_zerion_multi_sell(data_row, data_rows, row_index, t_ins, t_outs)
+            _do_zerion_multi_sell(data_row, data_rows, row_index, t_ins, t_outs, wallet)
         elif len(t_outs) == 1:
             # Multi-buy
-            _do_zerion_multi_buy(data_row, data_rows, row_index, t_ins, t_outs)
+            _do_zerion_multi_buy(data_row, data_rows, row_index, t_ins, t_outs, wallet)
         else:
             # Multi-sell to Multi-buy trade not supported
             raise UnexpectedContentError(
@@ -159,9 +158,9 @@ def _parse_zerion_row(
             )
     else:
         raise UnexpectedTypeError(
-            parser.in_header.index("Accounting Type"),
-            "Accounting Type",
-            row_dict["Accounting Type"],
+            parser.in_header.index("Transaction Type"),
+            "Transaction Type",
+            row_dict["Transaction Type"],
         )
 
 
@@ -176,7 +175,7 @@ def _do_zerion_multi_deposit(
             buy_quantity=buy_quantity,
             buy_asset=buy_asset,
             buy_value=buy_value,
-            wallet=WALLET,
+            wallet,
         )
 
         if not data_row.t_record:
@@ -189,7 +188,7 @@ def _do_zerion_multi_deposit(
 
 
 def _do_zerion_multi_withdrawal(
-    data_row: "DataRow", data_rows: List["DataRow"], row_index: int, t_outs: List[Any]
+        data_row: "DataRow", data_rows: List["DataRow"], row_index: int, t_outs: List[Any], wallet
 ) -> None:
     fee_quantity, fee_asset, fee_value = _get_data(
         data_row, "Fee Amount", "Fee Currency", "Fee Fiat Amount", "Fee Fiat Currency"
@@ -228,7 +227,7 @@ def _do_zerion_multi_withdrawal(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet=WALLET,
+            wallet,
         )
 
         if not data_row.t_record:
@@ -246,6 +245,7 @@ def _do_zerion_multi_sell(
     row_index: int,
     t_ins: List[Any],
     t_outs: List[Any],
+    wallet,
 ) -> None:
     fee_quantity, fee_asset, fee_value = _get_data(
         data_row, "Fee Amount", "Fee Currency", "Fee Fiat Amount", "Fee Fiat Currency"
@@ -312,7 +312,7 @@ def _do_zerion_multi_sell(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet=WALLET,
+            wallet,
         )
 
         if not data_row.t_record:
@@ -330,6 +330,7 @@ def _do_zerion_multi_buy(
     row_index: int,
     t_ins: List[Any],
     t_outs: List[Any],
+    wallet
 ) -> None:
     fee_quantity, fee_asset, fee_value = _get_data(
         data_row, "Fee Amount", "Fee Currency", "Fee Fiat Amount", "Fee Fiat Currency"
@@ -395,7 +396,7 @@ def _do_zerion_multi_buy(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet=WALLET,
+            wallet,
         )
 
         if not data_row.t_record:
@@ -446,6 +447,8 @@ def _get_data_json(
     return quantity, asset, value
 
 
+# Date,Time,Transaction Type,Status,Chain,Buy Amount,Buy Currency,Buy Currency Address,Buy Fiat Amount,Buy Fiat Currency,Sell Amount,Sell Currency,Sell Currency Address,Sell Fiat Amount,Sell Fiat Currency,Fee Amount,Fee Currency,Fee Fiat Amount,Fee Fiat Currency,Tx Hash,Link,Timestamp,Incoming Transfers JSON,Outgoing Transfers JSON
+
 DataParser(
     ParserType.EXPLORER,
     "Zerion (ETH Transactions)",
@@ -454,8 +457,7 @@ DataParser(
         "Time",
         "Transaction Type",
         "Status",
-        "Application",
-        "Accounting Type",
+        "Chain",
         "Buy Amount",
         "Buy Currency",
         "Buy Currency Address",
@@ -470,12 +472,11 @@ DataParser(
         "Fee Currency",
         "Fee Fiat Amount",
         "Fee Fiat Currency",
-        "Sender",
-        "Receiver",
         "Tx Hash",
         "Link",
         "Timestamp",
-        "Changes JSON",
+        "Incoming Transfers JSON",
+        "Outgoing Transfers JSON",
     ],
     worksheet_name="Zerion",
     all_handler=parse_zerion,
