@@ -442,7 +442,6 @@ class CoinGecko(DataSourceBase):
                 for c in self.index
             }
 
-        self.dump_index()
         self.get_config_assets()
 
     def get_latest(self, asset, quote, asset_id=None):
