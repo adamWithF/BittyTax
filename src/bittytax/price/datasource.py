@@ -5,6 +5,7 @@ import atexit
 import json
 import os
 import platform
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
@@ -55,10 +56,24 @@ class DataSourceBase:
     TIME_OUT = 30
 
     def __init__(self) -> None:
-        self.headers = {"User-Agent": self.USER_AGENT}
-        self.assets: Dict[AssetSymbol, DsSymbolToAssetData] = {}
-        self.ids: Dict[AssetId, DsIdToAssetData] = {}
+        self.headers = {"user-agent": self.user_agent}
+        self.assets: dict[assetsymbol, dssymboltoassetdata] = {}
+        self.ids: dict[assetid, dsidtoassetdata] = {}
         self.prices = self._load_prices()
+
+        self.index = self.load_index()
+        self.assets = {}
+        self.ids = {}
+
+        if self.index:
+            self.ids = {
+                c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
+                for c in self.index
+            }
+            self.assets = {
+                c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
+                for c in self.index
+            }
 
         for pair in sorted(self.prices):
             if config.debug:
@@ -69,18 +84,21 @@ class DataSourceBase:
     def name(self) -> DataSourceName:
         return DataSourceName(self.__class__.__name__)
 
-    def get_json(self, url: str) -> Any:
+    def get_json(self, url: str, repeat_after=0) -> Any:
         if config.debug:
             print(f"{Fore.YELLOW}price: GET {url} {list(self.headers.keys())}")
 
-        response = requests.get(url, headers=self.headers, timeout=self.TIME_OUT)
+        while True:
+            response = requests.get(url, headers={**self.headers, "User-Agent": self.USER_AGENT }, timeout=self.TIME_OUT)
 
-        if response.status_code in [401, 402, 403, 429, 502, 503, 504]:
-            response.raise_for_status()
+            if response.status_code in [401, 402, 403, 429, 502, 503, 504]:
+                try:
+                response.raise_for_status()
+                except:
+                    pass
+                time.sleep(repeat_after)
 
-        if response:
             return response.json()
-        return {}
 
     def update_prices(
         self, pair: TradingPair, prices: Dict[Date, DsPriceData], timestamp: Timestamp
@@ -126,6 +144,24 @@ class DataSourceBase:
         with open(
             os.path.join(CACHE_DIR, self.name() + ".json"), "w", encoding="utf-8"
         ) as price_cache:
+
+    def load_index(self):
+        filename = os.path.join(CACHE_DIR, f"{self.name()}_index.json")
+        if not os.path.exists(filename):
+            return []
+
+        try:
+            with open(filename, "r", encoding="utf-8") as index_cache:
+                json_index = json.load(index_cache)
+                return json_index
+        except (IOError, ValueError):
+            print(f"{WARNING} Index data cached for {self.name()} could not be loaded")
+            return []
+
+    def dump_prices(self):
+        with open(
+            os.path.join(CACHE_DIR, self.name() + ".json"), "w", encoding="utf-8"
+        ) as price_cache:
             json_prices = {
                 pair: {
                     f"{date:%Y-%m-%d}": {
@@ -137,6 +173,12 @@ class DataSourceBase:
                 for pair in self.prices
             }
             json.dump(json_prices, price_cache, indent=4, sort_keys=True)
+
+    def dump_index(self):
+        with open(
+            os.path.join(CACHE_DIR, f"{self.name()}_index.json"), "w", encoding="utf-8"
+        ) as index_cache:
+            json.dump(self.index, index_cache, indent=2, sort_keys=True)
 
     def get_config_assets(self) -> None:
         for symbol in config.data_source_select:
@@ -504,6 +546,31 @@ class CoinGecko(DataSourceBase):
                     "asset_id": c["id"],
                     "name": c["name"].strip(),
                 }
+
+        # page = 1
+
+        # if not self.assets or not self.ids:
+        #     while True:
+        #         print(f"query Coingecko: query v3/coins/markets?vs_currency=btc&per_page=250&page={page}&order=market_cap_asc")
+        #         json_resp = self.get_json(f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&per_page=250&page={page}&order=market_cap_asc", 60)
+        #         page += 1
+        #         if json_resp:
+        #             self.index += json_resp
+        #             continue
+        #         else:
+        #             break
+
+        #     self.dump_index()
+        #     self.ids = {
+        #         c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
+        #         for c in self.index
+        #     }
+        #     self.assets = {
+        #         c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
+        #         for c in self.index
+        #     }
+
+        # self.dump_index()
         self.get_config_assets()
 
     def get_latest(
