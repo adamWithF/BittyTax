@@ -5,6 +5,7 @@ import atexit
 import json
 import os
 import platform
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -30,8 +31,20 @@ class DataSourceBase:
     TIME_OUT = 30
 
     def __init__(self):
+        self.index = self.load_index()
         self.assets = {}
         self.ids = {}
+
+        if self.index:
+            self.ids = {
+                c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
+                for c in self.index
+            }
+            self.assets = {
+                c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
+                for c in self.index
+            }
+
         self.prices = self.load_prices()
 
         for pair in sorted(self.prices):
@@ -43,18 +56,25 @@ class DataSourceBase:
     def name(self):
         return self.__class__.__name__
 
-    def get_json(self, url):
+    def get_json(self, url, repeat_after=0):
         if config.debug:
             print(f"{Fore.YELLOW}price: GET {url}")
 
-        response = requests.get(url, headers={"User-Agent": self.USER_AGENT}, timeout=self.TIME_OUT)
+        while True:
+            response = requests.get(url, headers={"User-Agent": self.USER_AGENT}, timeout=self.TIME_OUT)
 
-        if response.status_code in [429, 502, 503, 504]:
-            response.raise_for_status()
+            if repeat_after and response.status_code == 429:
+                try:
+                    response.raise_for_status()
+                except:
+                    pass
+                time.sleep(repeat_after)
+                continue
 
-        if response:
+            elif response.status_code in [429, 502, 503, 504]:
+                response.raise_for_status()
+
             return response.json()
-        return {}
 
     def update_prices(self, pair, prices, timestamp):
         if pair not in self.prices:
@@ -98,6 +118,19 @@ class DataSourceBase:
             print(f"{WARNING} Data cached for {self.name()} could not be loaded")
             return {}
 
+    def load_index(self):
+        filename = os.path.join(CACHE_DIR, f"{self.name()}_index.json")
+        if not os.path.exists(filename):
+            return []
+
+        try:
+            with open(filename, "r", encoding="utf-8") as index_cache:
+                json_index = json.load(index_cache)
+                return json_index
+        except (IOError, ValueError):
+            print(f"{WARNING} Index data cached for {self.name()} could not be loaded")
+            return []
+
     def dump_prices(self):
         with open(
             os.path.join(CACHE_DIR, self.name() + ".json"), "w", encoding="utf-8"
@@ -113,6 +146,12 @@ class DataSourceBase:
                 for pair in self.prices
             }
             json.dump(json_prices, price_cache, indent=4, sort_keys=True)
+
+    def dump_index(self):
+        with open(
+            os.path.join(CACHE_DIR, f"{self.name()}_index.json"), "w", encoding="utf-8"
+        ) as index_cache:
+            json.dump(self.index, index_cache, indent=2, sort_keys=True)
 
     def get_config_assets(self):
         for symbol in config.data_source_select:
@@ -380,15 +419,30 @@ class CryptoCompare(DataSourceBase):
 class CoinGecko(DataSourceBase):
     def __init__(self):
         super().__init__()
-        json_resp = self.get_json("https://api.coingecko.com/api/v3/coins/list")
-        self.ids = {
-            c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
-            for c in json_resp
-        }
-        self.assets = {
-            c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
-            for c in json_resp
-        }
+        page = 1
+
+        if not self.assets or not self.ids:
+            while True:
+                print(f"query Coingecko: query v3/coins/markets?vs_currency=btc&per_page=250&page={page}&order=market_cap_asc")
+                json_resp = self.get_json(f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&per_page=250&page={page}&order=market_cap_asc", 60)
+                page += 1
+                if json_resp:
+                    self.index += json_resp
+                    continue
+                else:
+                    break
+
+            self.dump_index()
+            self.ids = {
+                c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
+                for c in self.index
+            }
+            self.assets = {
+                c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
+                for c in self.index
+            }
+
+        self.dump_index()
         self.get_config_assets()
 
     def get_latest(self, asset, quote, asset_id=None):
