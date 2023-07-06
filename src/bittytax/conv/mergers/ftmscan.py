@@ -7,7 +7,7 @@ from ..out_record import TransactionOutRecord
 from ..parsers.ftmscan import FANTOM_TXNS, FANTOM_INT, FANTOM_TOKENS, FANTOM_NFTS, WALLET, WORKSHEET_NAME
 
 STAKE_ADDRESSES = [
-    "0xFC00FACE00000000000000000000000000000000" # fantom wallet stacking
+    "0xfc00face00000000000000000000000000000000", # fantom wallet stacking
 ]
 
 def merge_fantomscan(data_files):
