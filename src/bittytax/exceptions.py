@@ -43,3 +43,11 @@ class MissingDataError(TransactionParserError):
 class ImportFailureError(Exception):
     def __str__(self):
         return "Import failure"
+
+class DataFetchFailureError(Exception):
+    def __init__(self, url, error):
+        self.url = url
+        self.error = error
+
+    def __str__(self):
+        return f"Data featch {self.url} failure: {self.error}"

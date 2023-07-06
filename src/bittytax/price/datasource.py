@@ -16,6 +16,7 @@ from colorama import Fore
 from ..config import config
 from ..constants import CACHE_DIR, TZ_UTC, WARNING
 from ..version import __version__
+from ..exceptions import DataFetchFailureError
 from .exceptions import UnexpectedDataSourceAssetIdError
 
 CRYPTOCOMPARE_MAX_DAYS = 2000
@@ -488,6 +489,10 @@ class CoinPaprika(DataSourceBase):
     def __init__(self):
         super().__init__()
         json_resp = self.get_json("https://api.coinpaprika.com/v1/coins")
+
+        if "error" in json_resp:
+            raise DataFetchFailureError(json_resp['error'])
+
         self.ids = {
             c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
             for c in json_resp
@@ -519,21 +524,23 @@ class CoinPaprika(DataSourceBase):
         if asset_id is None:
             asset_id = self.assets[asset]["id"]
 
-        url = (
-            "https://api.coinpaprika.com/v1/tickers/{asset_id}/historical"
-            "?start={timestamp:%Y-%m-%d}&limit={COINPAPRIKA_MAX_DAYS}&quote={quote}&interval=1d"
-        )
+        url =  f"https://api.coinpaprika.com/v1/tickers/{asset_id}/historical?start={timestamp:%Y-%m-%d}&limit={COINPAPRIKA_MAX_DAYS}&quote={quote}&interval=1d"
 
         json_resp = self.get_json(url)
-        pair = self.pair(asset, quote)
-        self.update_prices(
-            pair,
-            {
-                f'{dateutil.parser.parse(p["timestamp"]):%Y-%m-%d}': {
-                    "price": Decimal(repr(p["price"])) if p["price"] else None,
-                    "url": url,
-                }
+
+        if "error" in json_resp:
+            raise DataFetchFailureError(url, json_resp['error'])
+
+        else:
+            pair = self.pair(asset, quote)
+            self.update_prices(
+                pair,
+                {
+                    f'{dateutil.parser.parse(p["timestamp"]):%Y-%m-%d}': {
+                        "price": Decimal(repr(p["price"])) if p["price"] else None,
+                        "url": url,
+                    }
                 for p in json_resp
-            },
-            timestamp,
-        )
+                },
+                timestamp,
+            )
