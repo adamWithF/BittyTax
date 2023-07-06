@@ -29,6 +29,7 @@ from ..bt_types import (
 from ..config import config
 from ..constants import CACHE_DIR, WARNING
 from ..version import __version__
+from ..exceptions import DataFetchFailureError
 from .exceptions import UnexpectedDataSourceAssetIdError
 
 
@@ -637,6 +638,11 @@ class CoinPaprika(DataSourceBase):
             self.api_root = "https://api.coinpaprika.com/v1"
 
         json_resp = self.get_json(f"{self.api_root}/coins")
+        # json_resp = self.get_json("https://api.coinpaprika.com/v1/coins")
+
+        if "error" in json_resp:
+            raise DataFetchFailureError(json_resp['error'])
+
         self.ids = {
             c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
             for c in json_resp
@@ -678,8 +684,13 @@ class CoinPaprika(DataSourceBase):
             f"{self.api_root}/tickers/{asset_id}/historical"
             f"?start={timestamp:%Y-%m-%d}&limit={self.MAX_DAYS}&quote={quote}&interval=1d"
         )
+        # url =  f"https://api.coinpaprika.com/v1/tickers/{asset_id}/historical?start={timestamp:%Y-%m-%d}&limit={COINPAPRIKA_MAX_DAYS}&quote={quote}&interval=1d"
 
         json_resp = self.get_json(url)
+
+        if "error" in json_resp:
+            raise DataFetchFailureError(url, json_resp['error'])
+
         pair = self.pair(asset, quote)
         self.update_prices(
             pair,
