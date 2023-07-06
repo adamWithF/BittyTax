@@ -78,7 +78,7 @@ def _parse_zerion_row(data_rows: List["DataRow"], parser: DataParser, data_row: 
             fee_quantity=fee_quantity,
             fee_asset=fee_asset,
             fee_value=fee_value,
-            wallet,
+            wallet=wallet,
         )
         return
 
@@ -108,7 +108,7 @@ def _parse_zerion_row(data_rows: List["DataRow"], parser: DataParser, data_row: 
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet,
+                wallet=wallet,
             )
     elif row_dict["Transaction Type"] == "execute":
         if len(t_outs) > 1:
@@ -140,7 +140,7 @@ def _parse_zerion_row(data_rows: List["DataRow"], parser: DataParser, data_row: 
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet,
+                wallet=wallet,
             )
     elif row_dict["Transaction Type"] == "trade":
         if len(t_ins) == 1:
@@ -175,7 +175,7 @@ def _do_zerion_multi_deposit(
             buy_quantity=buy_quantity,
             buy_asset=buy_asset,
             buy_value=buy_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -227,7 +227,7 @@ def _do_zerion_multi_withdrawal(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -312,7 +312,7 @@ def _do_zerion_multi_sell(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -396,7 +396,7 @@ def _do_zerion_multi_buy(
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
