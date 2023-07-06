@@ -61,7 +61,7 @@ def _parse_zerion_row(data_rows, parser, data_row, row_index, wallet):
             fee_quantity=fee_quantity,
             fee_asset=fee_asset,
             fee_value=fee_value,
-            wallet,
+            wallet=wallet,
         )
         return
 
@@ -91,7 +91,7 @@ def _parse_zerion_row(data_rows, parser, data_row, row_index, wallet):
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet,
+                wallet=wallet,
             )
     elif row_dict["Transaction Type"] == "execute":
         if len(t_outs) > 1:
@@ -123,7 +123,7 @@ def _parse_zerion_row(data_rows, parser, data_row, row_index, wallet):
                 fee_quantity=fee_quantity,
                 fee_asset=fee_asset,
                 fee_value=fee_value,
-                wallet,
+                wallet=wallet,
             )
     elif row_dict["Transaction Type"] == "trade":
         if len(t_ins) == 1:
@@ -156,7 +156,7 @@ def _do_zerion_multi_deposit(data_row, data_rows, row_index, t_ins):
             buy_quantity=buy_quantity,
             buy_asset=buy_asset,
             buy_value=buy_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -201,7 +201,7 @@ def _do_zerion_multi_withdrawal(data_row, data_rows, row_index, t_outs, wallet):
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -269,7 +269,7 @@ def _do_zerion_multi_sell(data_row, data_rows, row_index, t_ins, t_outs, wallet)
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
@@ -336,7 +336,7 @@ def _do_zerion_multi_buy(data_row, data_rows, row_index, t_ins, t_outs, wallet):
             fee_quantity=split_fee_quantity,
             fee_asset=fee_asset,
             fee_value=split_fee_value,
-            wallet,
+            wallet=wallet,
         )
 
         if not data_row.t_record:
