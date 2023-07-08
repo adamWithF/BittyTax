@@ -453,6 +453,7 @@ class CryptoCompare(DataSourceBase):
             .lower(): {"symbol": c[1]["Symbol"].strip().upper(), "name": c[1]["CoinName"].strip()}
             for c in json_resp["Data"].items()
         }
+
         self.assets = {
             c[1]["Symbol"]
             .strip()
@@ -468,8 +469,10 @@ class CryptoCompare(DataSourceBase):
             asset_id = self.assets[asset]["asset_id"]
 
         json_resp = self.get_json(
-            f"{self.api_root}/data/price?extraParams={self.USER_AGENT}"
-            f"&fsym={asset_id}&tsyms={quote}"
+            # f"{self.api_root}/data/price?extraParams={self.USER_AGENT}"
+            # f"&fsym={asset_id}&tsyms={quote}"
+            f"https://min-api.cryptocompare.com/data/price"
+            f"?fsym={asset}&tsyms={quote}&extraParams={self.USER_AGENT}"
         )
         return Decimal(repr(json_resp[quote])) if quote in json_resp else None
 
@@ -485,10 +488,16 @@ class CryptoCompare(DataSourceBase):
 
         url = (
             f"{self.api_root}/data/histoday?aggregate=1"
-            f"&extraParams={self.USER_AGENT}&fsym={asset_id}&tsym={quote}"
+            f"&extraParams={self.USER_AGENT}"
+            f"&fsym={asset}&tsym={quote}"
             f"&limit={self.MAX_DAYS}"
             f"&toTs={self.epoch_time(Timestamp(timestamp + timedelta(days=self.MAX_DAYS)))}"
+            # f"&toTs={self.epoch_time(timestamp + timedelta(days=1))}"
         )
+
+        if config.crypto_compare_api_key:
+            url = f"{url}&api_key={config.crypto_compare_api_key}"
+
         json_resp = self.get_json(url)
         # Type=2 - CCCAGG market does not exist for this coin pair
         if json_resp["Response"] != "Success" and json_resp["Type"] != 2:
