@@ -378,7 +378,8 @@ class CoinDesk(DataSourceBase):
 class CryptoCompare(DataSourceBase):
     def __init__(self):
         super().__init__()
-        json_resp = self.get_json("https://min-api.cryptocompare.com/data/all/coinlist")
+        url = "https://min-api.cryptocompare.com/data/all/coinlist"
+        json_resp = self.get_json(url)
         self.assets = {
             c[1]["Symbol"].strip().upper(): {"name": c[1]["CoinName"].strip()}
             for c in json_resp["Data"].items()
@@ -388,17 +389,20 @@ class CryptoCompare(DataSourceBase):
     def get_latest(self, asset, quote, _asset_id=None):
         json_resp = self.get_json(
             f"https://min-api.cryptocompare.com/data/price"
-            f"?extraParams={self.USER_AGENT}&fsym={asset}&tsyms={quote}"
+            f"?fsym={asset}&tsyms={quote}"
         )
         return Decimal(repr(json_resp[quote])) if quote in json_resp else None
 
     def get_historical(self, asset, quote, timestamp, _asset_id=None):
         url = (
             f"https://min-api.cryptocompare.com/data/histoday?aggregate=1"
-            f"&extraParams={self.USER_AGENT}&fsym={asset}&tsym={quote}"
-            f"&limit={CRYPTOCOMPARE_MAX_DAYS}"
-            f"&toTs={self.epoch_time(timestamp + timedelta(days=CRYPTOCOMPARE_MAX_DAYS))}"
+            f"&fsym={asset}&tsym={quote}"
+            f"&limit=1"
+            f"&toTs={self.epoch_time(timestamp + timedelta(days=1))}"
         )
+
+        if config.crypto_compare_api_key:
+            url = f"{url}&api_key={config.crypto_compare_api_key}"
 
         json_resp = self.get_json(url)
         pair = self.pair(asset, quote)
