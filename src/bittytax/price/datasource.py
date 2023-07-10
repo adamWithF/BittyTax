@@ -509,7 +509,7 @@ class CryptoCompare(DataSourceBase):
             self.update_prices(
                 pair,
                 {
-                    Date(datetime.fromtimestamp(d["time"]).date()): {
+                    f'{datetime.fromtimestamp(d["time"]):%Y-%m-%d}': {
                         "price": Decimal(repr(d["close"])) if "close" in d and d["close"] else None,
                         "url": SourceUrl(url),
                     }
