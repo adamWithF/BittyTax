@@ -7,7 +7,7 @@ from ..dataparser import DataParser
 from ..out_record import TransactionOutRecord
 from .etherscan import _get_note
 
-WALLET = "Binance Smart Chain"
+WALLET = "BSC"
 WORKSHEET_NAME = "BscScan"
 
 
