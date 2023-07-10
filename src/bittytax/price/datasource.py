@@ -634,6 +634,18 @@ class CoinGecko(DataSourceBase):
             )
 
 
+class Local(DataSourceBase):
+    def __init__(self):
+        super().__init__()
+
+    def get_historical(self, asset, quote, timestamp):
+        pair = f"{asset}/{quote}".upper()
+        record = self.prices[pair][f"{timestamp:%Y-%m-%d}"]
+        if record:
+            return record
+        print(f"{WARNING} Price for {asset} on {timestamp:%Y-%m-%d} is not available")
+
+
 class CoinPaprika(DataSourceBase):
     MAX_DAYS = 5000
 
