@@ -412,7 +412,7 @@ class CryptoCompare(DataSourceBase):
                 pair,
                 {
                     f'{datetime.fromtimestamp(d["time"]):%Y-%m-%d}': {
-                        "price": Decimal(repr(d["close"])) if "close" in d and d["close"] else None,
+                        "price": Decimal(repr(d["open"])) if "open" in d and d["open"] else None,
                         "url": url,
                     }
                     for d in json_resp["Data"]
