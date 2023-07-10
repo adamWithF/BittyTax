@@ -69,6 +69,48 @@ class ValueAsset:
         )
         return Decimal(0), FixedValue(False)
 
+    def get_value_from_pair(self, asset: AssetSymbol, timestamp, quantity: Decimal, pair_asset, pair_quantity):
+        if asset == config.ccy:
+            return quantity, True
+
+        if quantity == 0:
+            return Decimal(0), False
+
+        asset_price_ccy, _, _ = self.get_historical_price(asset, timestamp)
+        if asset_price_ccy is None:
+            pair_asset_price_ccy, _, _ = self.get_historical_price(pair_asset, timestamp)
+
+            if pair_asset_price_ccy is None:
+                return Decimal(0), False
+
+            pair_value = pair_asset_price_ccy * pair_quantity
+            if config.debug:
+                print(
+                    f"{Fore.YELLOW}price: {timestamp:%Y-%m-%d}, 1 "
+                    f"{asset}={config.sym()}{asset_price_ccy:0,.2f} {config.ccy}, "
+                    f"{quantity.normalize():0,f} {asset}="
+                    f"{Style.BRIGHT}{config.sym()}{value:0,.2f} {config.ccy}{Style.NORMAL} (from pair)"
+                )
+            return pair_value, False
+
+        else:
+            value = asset_price_ccy * quantity
+            if config.debug:
+                print(
+                    f"{Fore.YELLOW}price: {timestamp:%Y-%m-%d}, 1 "
+                    f"{asset}={config.sym()}{asset_price_ccy:0,.2f} {config.ccy}, "
+                    f"{quantity.normalize():0,f} {asset}="
+                    f"{Style.BRIGHT}{config.sym()}{value:0,.2f} {config.ccy}{Style.NORMAL}"
+                )
+            return value, False
+
+        tqdm.write(
+            f"{WARNING} Price for {asset} on {timestamp:%Y-%m-%d} is not available, "
+            f"using price of {config.sym()}{0:0,.2f}"
+        )
+        return Decimal(0), False
+
+
     def get_current_value(
         self, asset: AssetSymbol, quantity: Decimal
     ) -> Tuple[Optional[Decimal], AssetName, DataSourceName]:

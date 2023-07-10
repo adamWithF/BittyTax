@@ -131,18 +131,29 @@ class TransactionHistory:
             if tr.sell:
                 (tr.buy.cost, tr.buy.cost_fixed) = self.which_asset_value(tr)
             else:
-                (tr.buy.cost, tr.buy.cost_fixed) = self.value_asset.get_value(
-                    tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
-                )
+                if tr.sell:
+                    (tr.buy.cost, tr.buy.cost_fixed) = self.value_asset.get_value_from_pair(
+                        tr.buy.asset, tr.buy.timestamp, tr.buy.quantity, tr.sell.asset, tr.sell.quantity
+                    )
+                else:
+                    (tr.buy.cost, tr.buy.cost_fixed) = self.value_asset.get_value(
+                        tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
+                    )
 
         if tr.sell and tr.sell.disposal and tr.sell.proceeds is None:
             if tr.buy:
                 tr.sell.proceeds = tr.buy.cost
                 tr.sell.proceeds_fixed = tr.buy.cost_fixed
             else:
-                (tr.sell.proceeds, tr.sell.proceeds_fixed) = self.value_asset.get_value(
-                    tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
-                )
+                if tr.buy:
+                    (tr.sell.proceeds, tr.sell.proceeds_fixed) = self.value_asset.get_value_from_pair(
+                        tr.sell.asset, tr.sell.timestamp, tr.sell.quantity, tr.buy.asset, tr.buy.quantity
+                    )
+                else:
+                    (tr.sell.proceeds, tr.sell.proceeds_fixed) = self.value_asset.get_value(
+                        tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
+                    )
+
         if tr.fee and tr.fee.disposal and tr.fee.proceeds is None:
             if tr.fee.asset not in config.fiat_list:
                 if tr.buy and tr.buy.asset == tr.fee.asset:
@@ -187,16 +198,28 @@ class TransactionHistory:
 
         if config.trade_asset_type == config.TRADE_ASSET_TYPE_BUY:
             if tr.buy.cost is None:
-                value, fixed = self.value_asset.get_value(
-                    tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
-                )
+                if tr.sell:
+                    value, fixed = self.value_asset.get_value_from_pair(
+                        tr.buy.asset, tr.buy.timestamp, tr.buy.quantity, tr.sell.asset, tr.sell.quantity
+                    )
+                else:
+                    value, fixed = self.value_asset.get_value(
+                        tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
+                    )
+
             else:
                 value, fixed = tr.buy.cost, tr.buy.cost_fixed
         elif config.trade_asset_type == config.TRADE_ASSET_TYPE_SELL:
             if tr.sell.proceeds is None:
-                value, fixed = self.value_asset.get_value(
-                    tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
-                )
+                if tr.buy:
+                    value, fixed = self.value_asset.get_value_from_pair(
+                        tr.sell.asset, tr.sell.timestamp, tr.sell.quantity, tr.buy.asset, tr.buy.quantity
+                    )
+                else:
+                    value, fixed = self.value_asset.get_value(
+                        tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
+                    )
+
             else:
                 value, fixed = tr.sell.proceeds, tr.sell.proceeds_fixed
         else:
@@ -209,16 +232,28 @@ class TransactionHistory:
 
             if pos_sell_asset <= pos_buy_asset:
                 if tr.sell.proceeds is None:
-                    value, fixed = self.value_asset.get_value(
-                        tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
-                    )
+                    if tr.buy:
+                        value, fixed = self.value_asset.get_value_from_pair(
+                            tr.sell.asset, tr.sell.timestamp, tr.sell.quantity, tr.buy.asset, tr.buy.quantity
+                        )
+                    else:
+                        value, fixed = self.value_asset.get_value(
+                            tr.sell.asset, tr.sell.timestamp, tr.sell.quantity
+                        )
+
                 else:
                     value, fixed = tr.sell.proceeds, tr.sell.proceeds_fixed
             else:
                 if tr.buy.cost is None:
-                    value, fixed = self.value_asset.get_value(
-                        tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
-                    )
+                    if tr.sell:
+                        value, fixed = self.value_asset.get_value_from_pair(
+                            tr.buy.asset, tr.buy.timestamp, tr.buy.quantity, tr.sell.asset, tr.sell.quantity
+                        )
+                    else:
+                        value, fixed = self.value_asset.get_value(
+                            tr.buy.asset, tr.buy.timestamp, tr.buy.quantity
+                        )
+
                 else:
                     value, fixed = tr.buy.cost, tr.buy.cost_fixed
 
