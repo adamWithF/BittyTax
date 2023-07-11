@@ -36,8 +36,7 @@ STAKE_ADDRESSES = [
     "0x7C9e73d4C71dae564d41F78d56439bB4ba87592f", # Interest Bearing BUSD
     "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", # Binance-Peg Ethereum Token
     "0xbfF4a34A4644a113E8200D7F1D79b3555f723AfE", # Interest Bearing ETH
-
-
+    "0x1Ffe17B99b439bE0aFC831239dDECda2A790fF3A", # Cream finance BNB
 ]
 
 def merge_bscscan(data_files):
