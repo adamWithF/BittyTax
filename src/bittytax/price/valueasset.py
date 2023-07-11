@@ -87,9 +87,9 @@ class ValueAsset:
             if config.debug:
                 print(
                     f"{Fore.YELLOW}price: {timestamp:%Y-%m-%d}, 1 "
-                    f"{asset}={config.sym()}{asset_price_ccy:0,.2f} {config.ccy}, "
+                    f"{asset}={config.sym()}{pair_asset_price_ccy:0,.2f} {config.ccy}, "
                     f"{quantity.normalize():0,f} {asset}="
-                    f"{Style.BRIGHT}{config.sym()}{value:0,.2f} {config.ccy}{Style.NORMAL} (from pair)"
+                    f"{Style.BRIGHT}{config.sym()}{pair_value:0,.2f} {config.ccy}{Style.NORMAL} (from pair)"
                 )
             return pair_value, False
 
