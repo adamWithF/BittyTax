@@ -492,6 +492,15 @@ class CoinGecko(DataSourceBase):
 class Local(DataSourceBase):
     def __init__(self):
         super().__init__()
+        self.prices = self.load_prices()
+        self.assets = {}
+
+        for key, _ in self.prices.items():
+            symbol = key.split("/")[0].upper()
+            self.assets[symbol] = {
+                "id": symbol,
+                "name": symbol
+            }
 
     def get_historical(self, asset, quote, timestamp):
         pair = f"{asset}/{quote}".upper()
