@@ -138,6 +138,9 @@ MOONSCAN_TXNS = DataParser(
         filename_prefix="moonriver",
 )
 
+
+"Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxMOVR_Value","From","TxTo","ContractAddress","Value_IN(MOVR)","Value_OUT(MOVR)",None,"Historical $Price/MOVR","Status","ErrCode","Type"
+
 MOONSCAN_INT = DataParser(
         DataParser.TYPE_EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
