@@ -32,7 +32,7 @@ def merge_moonscan(data_files):
 
     return merge
 
-DataMerge("FantomScan fees & multi-token transactions",
+DataMerge("MoonScan fees & multi-token transactions",
           {TXNS: {'req': DataMerge.MANDATORY, 'obj': MOONSCAN_TXNS},
            TOKENS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_TOKENS},
            NFTS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_NFTS},
