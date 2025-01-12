@@ -504,9 +504,8 @@ class Local(DataSourceBase):
 
     def get_historical(self, asset, quote, timestamp):
         pair = f"{asset}/{quote}".upper()
-        record = self.prices[pair][f"{timestamp:%Y-%m-%d}"]
-        if record:
-            return record
+        if "pair" in self.prices and f"{timestamp:%Y-%m-%d}" in self.prices[pair]:
+            return self.prices[pair][f"{timestamp:%Y-%m-%d}"]
         print(f"{WARNING} Price for {asset} on {timestamp:%Y-%m-%d} is not available")
 
 
