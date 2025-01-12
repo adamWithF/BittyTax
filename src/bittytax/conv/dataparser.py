@@ -175,7 +175,7 @@ class DataParser:  # pylint: disable=too-many-instance-attributes
 
             if config.debug:
                 sys.stderr.write(
-                    f"{Fore.BLUE}header: row[{row_num + 1}] "
+                    f"{Fore.GREEN}header: row[{row_num + 1}] "
                     f"NO MATCH: {cls.format_row(parser.header)} '{parser.name}'\n"
                 )
 

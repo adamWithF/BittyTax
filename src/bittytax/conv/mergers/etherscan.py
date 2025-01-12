@@ -57,7 +57,7 @@ def _do_merge_etherscan(data_files, staking_addresses):  # pylint: disable=too-m
             if len(wallet_tx_ids[txn]) == 1:
                 if config.debug:
                     sys.stderr.write(
-                        f"{Fore.BLUE}merge: {wallet_tx_ids[txn][0].data_file_id:<5}:"
+                        f"{Fore.GREEN}merge: {wallet_tx_ids[txn][0].data_file_id:<5}:"
                         f"{wallet_tx_ids[txn][0].data_row}\n"
                     )
                 continue
