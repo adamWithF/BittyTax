@@ -145,6 +145,17 @@ class DataSourceBase:
         with open(
             os.path.join(CACHE_DIR, self.name() + ".json"), "w", encoding="utf-8"
         ) as price_cache:
+            json_prices = {
+                pair: {
+                    f"{date:%Y-%m-%d}": {
+                        "price": self.decimal_to_str(price["price"]),
+                        "url": price["url"],
+                    }
+                    for date, price in self.prices[pair].items()
+                }
+                for pair in self.prices
+            }
+            json.dump(json_prices, price_cache, indent=4, sort_keys=True)
 
     def load_index(self):
         filename = os.path.join(CACHE_DIR, f"{self.name()}_index.json")
