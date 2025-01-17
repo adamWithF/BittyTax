@@ -3,7 +3,7 @@
 
 from decimal import Decimal
 
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 from ..out_record import TransactionOutRecord
 from .etherscan import _get_note
 
@@ -143,7 +143,7 @@ def parse_polygonscan_nfts(data_row, _parser, **kwargs):
 
 # Tokens and internal transactions have the same header as Etherscan
 POLYGON_TXNS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     "PolygonScan (Polygon Transactions)",
     [
         "Txhash",
@@ -169,7 +169,7 @@ POLYGON_TXNS = DataParser(
 )
 
 POLYGON_INT = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     "PolygonScan (Internal Transactions)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxMATIC_Value","From","TxTo","ContractAddress","Value_IN(MATIC)","Value_OUT(MATIC)",None,"Historical $Price/MATIC","Status","ErrCode","Type"],
     worksheet_name=WORKSHEET_NAME,
@@ -178,7 +178,7 @@ POLYGON_INT = DataParser(
 )
 
 POLYGON_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} (ERC-20 Tokens)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","TokenValue","USDValueDayOfTx","ContractAddress","TokenName","TokenSymbol"],
     worksheet_name=WORKSHEET_NAME,
@@ -187,7 +187,7 @@ POLYGON_TOKENS = DataParser(
 )
 
 POLYGON_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} (ERC-721 NFTs)",
     [
         "Txhash",

@@ -2,9 +2,10 @@
 # (c) Nano Nano Ltd 2023
 
 from .etherscan import _do_merge_etherscan
-from ..datamerge import DataMerge
+from ..datamerge import DataMerge, ParserRequired
 from ..out_record import TransactionOutRecord
-from ..parsers.arbiscan import ARBISCAN_TXNS, ARBISCAN_TOKENS, ARBISCAN_NFTS, ARBISCAN_INT, WALLET, WORKSHEET_NAME
+from ..parsers.arbiscan import WALLET, WORKSHEET_NAME, ARBISCAN_TXNS, ARBISCAN_TOKENS, ARBISCAN_NFTS, ARBISCAN_INT
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS
 
 STAKE_ADDRESSES = []
 
@@ -31,8 +32,8 @@ def merge_arbiscan(data_files):
     return merge
 
 DataMerge("ArbiScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MANDATORY, 'obj': ARBISCAN_TXNS},
-           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_TOKENS},
-           NFTS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_NFTS},
-           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': ARBISCAN_INT}},
+          {TXNS: {'req': ParserRequired.MANDATORY, 'obj': ARBISCAN_TXNS},
+           TOKENS: {'req': ParserRequired.OPTIONAL, 'obj': ARBISCAN_TOKENS},
+           NFTS: {'req': ParserRequired.OPTIONAL, 'obj': ARBISCAN_NFTS},
+           INTERNAL_TXNS: {'req': ParserRequired.OPTIONAL, 'obj': ARBISCAN_INT}},
           merge_arbiscan)

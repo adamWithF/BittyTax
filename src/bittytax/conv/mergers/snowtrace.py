@@ -8,6 +8,7 @@ from ..out_record import TransactionOutRecord
 from ..parsers.snowtrace import avax_int, avax_txns, avax_tokens, avax_nfts
 
 from .etherscan import _do_merge_etherscan
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS
 
 STAKE_ADDRESSES: List[str] = []
 
@@ -25,8 +26,8 @@ DataMerge(
     {
         TXNS: {"req": ParserRequired.MANDATORY, "obj": avax_txns},
         TOKENS: {"req": ParserRequired.MANDATORY, "obj": avax_tokens},
-        NFTS: {"req": DataMerge.OPTIONAL, "obj": avax_nfts},
-        INTERNAL_TXNS: {"req": DataMerge.OPTIONAL, "obj": avax_int},
+        NFTS: {"req": ParserRequired.OPTIONAL, "obj": avax_nfts},
+        INTERNAL_TXNS: {"req": ParserRequired.OPTIONAL, "obj": avax_int},
     },
     merge_snowtrace,
 )

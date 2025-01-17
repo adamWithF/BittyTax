@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 
 WALLET = "Fantom chain"
 WORKSHEET_NAME = "FtmScan"
@@ -128,7 +128,7 @@ def parse_ftmscan_nfts(data_row, _parser, **kwargs):
 
 
 FANTOM_TXNS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
          'Value_IN(FTM)', 'Value_OUT(FTM)', None, 'TxnFee(FTM)', 'TxnFee(USD)',
@@ -139,7 +139,7 @@ FANTOM_TXNS = DataParser(
 )
 
 FANTOM_INT = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
          'ParentTxFTM_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(FTM)',
@@ -150,7 +150,7 @@ FANTOM_INT = DataParser(
 )
 
 FANTOM_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
     [
         "Txhash",
@@ -171,7 +171,7 @@ FANTOM_TOKENS = DataParser(
 )
 
 FANTOM_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
     [
         "Txhash",

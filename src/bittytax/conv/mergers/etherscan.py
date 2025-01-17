@@ -32,6 +32,8 @@ TXNS = FileId("txn")
 TOKENS = FileId("token")
 NFTS = FileId("nft")
 INTERNAL_TXNS = FileId("int")
+DEPOSITS = FileId("deposit")
+WITHDRAWALS = FileId("withdrawal")
 
 STAKE_ADDRESSES = [
     "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",  # PancakeSwap (BNB)

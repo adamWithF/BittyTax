@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserArgs, ParserType
 
 WALLET = "Arbitrum"
 WORKSHEET_NAME = "ArbiScan"
@@ -133,7 +133,7 @@ def parse_arbiscan_nfts(data_row, _parser, **kwargs):
 
 
 ARBISCAN_TXNS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET}  Transactions)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)",None,"TxnFee(ETH)","TxnFee(USD)","Historical $Price/ETH","Status","ErrCode","Method"],
         worksheet_name=WORKSHEET_NAME,
@@ -142,7 +142,7 @@ ARBISCAN_TXNS = DataParser(
     )
 
 ARBISCAN_INT = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'ParentTxFrom', 'ParentTxTo',
          'ParentTxETH_Value', 'From', 'TxTo', 'ContractAddress', 'Value_IN(ETH)',
@@ -153,7 +153,7 @@ ARBISCAN_INT = DataParser(
 )
 
 ARBISCAN_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
     [
         "Txhash",
@@ -174,7 +174,7 @@ ARBISCAN_TOKENS = DataParser(
 )
 
 ARBISCAN_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
     [
         "Txhash",

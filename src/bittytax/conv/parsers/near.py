@@ -6,7 +6,7 @@
 import time
 
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 
 WALLET = "Near"
 WORKSHEET_NAME = "Near"
@@ -47,7 +47,7 @@ def get_wallet_address(filename):
 
 
 near_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     "Near",
     ['Status','Txn Hash','Method','Deposit Value','Txn Fee','From','To','Block','Time'],
     worksheet_name=WORKSHEET_NAME,

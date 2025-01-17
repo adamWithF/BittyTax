@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 
 WALLET = "Moonriver"
 WORKSHEET_NAME = "MoonScan"
@@ -128,7 +128,7 @@ def parse_moonscan_nfts(data_row, _parser, **kwargs):
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
 MOONSCAN_TXNS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Transactions)",
         ['Txhash', 'Blockno', 'UnixTimestamp', 'DateTime', 'From', 'To', 'ContractAddress',
          'Value_IN(MOVR)', 'Value_OUT(MOVR)', None, 'TxnFee(MOVR)', 'TxnFee(USD)',
@@ -142,7 +142,7 @@ MOONSCAN_TXNS = DataParser(
 "Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxMOVR_Value","From","TxTo","ContractAddress","Value_IN(MOVR)","Value_OUT(MOVR)",None,"Historical $Price/MOVR","Status","ErrCode","Type"
 
 MOONSCAN_INT = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
         ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo",
          "ParentTxMOVR_Value","From","TxTo","ContractAddress","Value_IN(MOVR)","Value_OUT(MOVR)",
@@ -153,7 +153,7 @@ MOONSCAN_INT = DataParser(
 )
 
 MOONSCAN_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-20 Tokens)",
     [
         "Txhash",
@@ -174,7 +174,7 @@ MOONSCAN_TOKENS = DataParser(
 )
 
 MOONSCAN_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
     [
         "Txhash",

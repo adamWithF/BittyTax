@@ -8,7 +8,7 @@ import ntpath
 
 from ..exceptions import DataFilenameError
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 
 WALLET = "Kusama"
 WORKSHEET_NAME = "Kusama SubScan"
@@ -72,7 +72,7 @@ def parse_subscan_transfers(data_row, _parser, **kwargs):
 #         raise DataFilenameError(filename, "Kusama address")
 
 KUSAMA_TRANSFERS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Transfer History)",
     ["Extrinsic ID","Date","Block","Hash","Symbol","From","To","Value","Result"],
     worksheet_name=WORKSHEET_NAME,

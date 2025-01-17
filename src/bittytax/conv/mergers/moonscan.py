@@ -2,9 +2,10 @@
 # (c) Nano Nano Ltd 2021
 
 from .etherscan import _do_merge_etherscan
-from ..datamerge import DataMerge
+from ..datamerge import DataMerge, ParserRequired
 from ..out_record import TransactionOutRecord
 from ..parsers.moonscan import MOONSCAN_TXNS, MOONSCAN_INT, MOONSCAN_TOKENS, MOONSCAN_NFTS, WALLET, WORKSHEET_NAME
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS
 
 STAKE_ADDRESSES = [
     "0x98878b06940ae243284ca214f92bb71a2b032b8a", # MOVR
@@ -33,8 +34,8 @@ def merge_moonscan(data_files):
     return merge
 
 DataMerge("MoonScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MANDATORY, 'obj': MOONSCAN_TXNS},
-           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_TOKENS},
-           NFTS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_NFTS},
-           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': MOONSCAN_INT}},
+          {TXNS: {'req': ParserRequired.MANDATORY, 'obj': MOONSCAN_TXNS},
+           TOKENS: {'req': ParserRequired.OPTIONAL, 'obj': MOONSCAN_TOKENS},
+           NFTS: {'req': ParserRequired.OPTIONAL, 'obj': MOONSCAN_NFTS},
+           INTERNAL_TXNS: {'req': ParserRequired.OPTIONAL, 'obj': MOONSCAN_INT}},
           merge_moonscan)

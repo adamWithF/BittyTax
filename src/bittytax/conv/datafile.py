@@ -312,7 +312,7 @@ class DataFile:
         # Header might not be on first line
         for row in range(14):
             try:
-                parser = DataParser.match(next(reader), row, filename)
+                parser = DataParser.match_header(next(reader), row, filename)
             except KeyError:
                 continue
             except StopIteration:

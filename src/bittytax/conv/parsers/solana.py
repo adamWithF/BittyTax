@@ -6,7 +6,7 @@
 import time
 
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserArgs, ParserType
 
 WALLET = "Solana"
 WORKSHEET_NAME = "Solana SolScan"
@@ -42,7 +42,7 @@ def get_wallet_address(filename):
 
 
 solscan_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WALLET} ({WORKSHEET_NAME} Transactions)",
     ['Type', 'Txhash', 'BlockTime Unix', 'BlockTime', 'Fee (SOL)', 'TokenAccount', 'ChangeType', 'SPL BalanceChange', 'PreBalancer', 'PostBalancer', 'TokenAddress', 'TokenName(off-chain)', 'Symbol(off-chain)', 'SolTransfer Source', 'SolTransfer Destination', 'Amount (SOL)'],
     worksheet_name=WORKSHEET_NAME,

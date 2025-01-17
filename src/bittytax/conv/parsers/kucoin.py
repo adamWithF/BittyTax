@@ -845,7 +845,7 @@ DataParser(
 )
 
 DataParser(
-    DataParser.TYPE_EXCHANGE,
+    ParserType.EXCHANGE,
     "KuCoin Bundle Deposits History",
     ["UID","Account Type","Time(UTC+08:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network"],
     worksheet_name="Kucoin B D",
@@ -853,7 +853,7 @@ DataParser(
 )
 
 DataParser(
-    DataParser.TYPE_EXCHANGE,
+    ParserType.EXCHANGE,
     "KuCoin Bundle Withdrawals History",
 
     ["UID","Account Type","Time(UTC+08:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network","Withdrawal Address/Account"],
@@ -862,7 +862,7 @@ DataParser(
 )
 
 DataParser(
-    DataParser.TYPE_EXCHANGE,
+    ParserType.EXCHANGE,
     "KuCoin Bundle Earn Orders Profit History",
 
     ["UID","Account Type","Order ID","Time(UTC+08:00)","Staked Coin","Product Type","Product Name","Earnings Coin","Earnings Type","Remarks","Amount","Amount（USDT）","Fee"],
@@ -871,7 +871,7 @@ DataParser(
 )
 
 DataParser(
-    DataParser.TYPE_EXCHANGE,
+    ParserType.EXCHANGE,
     "KuCoin Bundle Earn Orders Stacking History",
 
     ["UID","Account Type","Staked Time(UTC+08:00)","Staked Coin","Product Type","Product Name","Maturity Date(UTC+08:00)","Amount","Redemption Time(UTC+08:00)","Status"],
@@ -880,7 +880,7 @@ DataParser(
 )
 
 DataParser(
-    DataParser.TYPE_EXCHANGE,
+    ParserType.EXCHANGE,
     "KuCoin Bundle Futures Orders Realized PNL",
     ["UID","Account Type","Symbol","Close Type","Realized PNL","Total Realized PNL","Total Funding Fees","Total Trading Fees","Position Opening Time(UTC+08:00)","Position Closing Time(UTC+08:00)"],
     worksheet_name="Kucoin B F PNL",

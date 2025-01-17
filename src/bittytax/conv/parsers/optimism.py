@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from .etherscan import _get_note
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
 
 WALLET = "Optimism"
 WORKSHEET_NAME = "Optimistic Ethereum Scanner"
@@ -179,7 +179,7 @@ def parse_optimism_withdrawals(data_row, _parser, **kwargs):
 
 
 OPTIMISM_TXNS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)", None, "TxnFee(ETH)","TxnFee(USD)","Historical $Price/Eth","Status","ErrCode","Method"],
         worksheet_name=WORKSHEET_NAME,
@@ -188,7 +188,7 @@ OPTIMISM_TXNS = DataParser(
 )
 
 OPTIMISM_INT = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxETH_Value","From","TxTo","ContractAddress","Value_IN(ETH)","Value_OUT(ETH)",None,"Historical $Price/Eth","Status","ErrCode","Type"],
         worksheet_name=WORKSHEET_NAME,
@@ -197,7 +197,7 @@ OPTIMISM_INT = DataParser(
 )
 
 OPTIMISM_DEPOSITS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Deposits)",
         ["L1 Deposit Txhash","L2 Txhash","UnixTimestamp","DateTime","Value","Token Name","Token Symbol","Contract Address"],
         worksheet_name=WORKSHEET_NAME,
@@ -206,7 +206,7 @@ OPTIMISM_DEPOSITS = DataParser(
 )
 
 OPTIMISM_WITHDRAWALS = DataParser(
-        DataParser.TYPE_EXPLORER,
+        ParserType.EXPLORER,
         f"{WORKSHEET_NAME} ({WALLET} Withdrawals)",
         ["L2 Txhash","UnixTimestamp","DateTime","L1 Txhash","Value","Token Name","Token Symbol","Contract Address","Status"],
         worksheet_name=WORKSHEET_NAME,
@@ -215,7 +215,7 @@ OPTIMISM_WITHDRAWALS = DataParser(
 )
 
 OPTIMISM_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Address - ERC20 Token Transfers)",
     [
         "Txhash",
@@ -235,7 +235,7 @@ OPTIMISM_TOKENS = DataParser(
 )
 
 OPTIMISM_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Address - ERC721 Token Transfers)",
     ["Txhash","UnixTimestamp","DateTime","From","To","ContractAddress","TokenId","TokenName","TokenSymbol"],
     worksheet_name=WORKSHEET_NAME,

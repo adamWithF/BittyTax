@@ -3,7 +3,7 @@
 
 from decimal import Decimal
 
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserArgs, ParserType
 from ..out_record import TransactionOutRecord
 from .etherscan import _get_note
 
@@ -146,7 +146,7 @@ def parse_bscscan_nfts(data_row, _parser, **kwargs):
 
 # Tokens and internal transactions have the same header as Etherscan
 BSC_TXNS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     [
         "Txhash",
@@ -172,7 +172,7 @@ BSC_TXNS = DataParser(
 )
 
 BSC_INT = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Internal Transactions)", ["Txhash","Blockno","UnixTimestamp","DateTime","ParentTxFrom","ParentTxTo","ParentTxBNB_Value","From","TxTo","ContractAddress","Value_IN(BNB)","Value_OUT(BNB)", None,"Historical $Price/BNB","Status","ErrCode","Type"],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bscscan_internal,
@@ -180,7 +180,7 @@ BSC_INT = DataParser(
 )
 
 BSC_TOKENS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} BEP-20 Tokens)",
     ["Txhash","Blockno","UnixTimestamp","DateTime","From","To","TokenValue","USDValueDayOfTx","ContractAddress","TokenName","TokenSymbol"],
     worksheet_name=WORKSHEET_NAME,
@@ -189,7 +189,7 @@ BSC_TOKENS = DataParser(
 )
 
 BSC_NFTS = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} ERC-721 NFTs)",
     [
         "Txhash",

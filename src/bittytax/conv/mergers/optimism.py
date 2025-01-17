@@ -5,9 +5,10 @@ import copy
 
 from ...config import config
 from .etherscan import _consolidate, _get_ins_outs, _method_handling, _do_fee_split, _do_etherscan_multi_sell, _do_etherscan_multi_buy, TXNS, TOKENS, NFTS, INTERNAL_TXNS
-from ..datamerge import DataMerge, MergeDataRow
+from ..datamerge import DataMerge, MergeDataRow, ParserRequired
 from ..out_record import TransactionOutRecord
 from ..parsers.optimism import OPTIMISM_TXNS, OPTIMISM_DEPOSITS, OPTIMISM_WITHDRAWALS, OPTIMISM_INT, OPTIMISM_TOKENS, OPTIMISM_NFTS, WALLET, WORKSHEET_NAME
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS, DEPOSITS, WITHDRAWALS
 
 STAKE_ADDRESSES = []
 
@@ -132,10 +133,10 @@ def _do_merge_etherscan(data_files, staking_addresses):  # pylint: disable=too-m
 
 
 DataMerge("Optimistic etherscan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MANDATORY, 'obj': OPTIMISM_TXNS},
-           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': OPTIMISM_TOKENS},
-           NFTS: {'req': DataMerge.OPTIONAL, 'obj': OPTIMISM_NFTS},
-           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': OPTIMISM_INT},
-           DEPOSITS: {'req': DataMerge.OPTIONAL, 'obj': OPTIMISM_DEPOSITS},
-           WITHDRAWALS: {'req': DataMerge.OPTIONAL, 'obj': OPTIMISM_WITHDRAWALS}},
+          {TXNS: {'req': ParserRequired.MANDATORY, 'obj': OPTIMISM_TXNS},
+           TOKENS: {'req': ParserRequired.OPTIONAL, 'obj': OPTIMISM_TOKENS},
+           NFTS: {'req': ParserRequired.OPTIONAL, 'obj': OPTIMISM_NFTS},
+           INTERNAL_TXNS: {'req': ParserRequired.OPTIONAL, 'obj': OPTIMISM_INT},
+           DEPOSITS: {'req': ParserRequired.OPTIONAL, 'obj': OPTIMISM_DEPOSITS},
+           WITHDRAWALS: {'req': ParserRequired.OPTIONAL, 'obj': OPTIMISM_WITHDRAWALS}},
           merge_optimism)

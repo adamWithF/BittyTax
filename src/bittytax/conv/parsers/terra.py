@@ -6,7 +6,7 @@
 import time
 
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserArgs, ParserType
 
 WALLET = "Terra"
 WORKSHEET_NAME = "Terra StakeTax"
@@ -42,7 +42,7 @@ def get_wallet_address(filename):
 
 
 terra_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     "Terra",
     ['Timestamp','Transaction Hash','Tracked Address','Transaction Type','Sender','Recipient','Amount','Currency','Fee Amount','Fee Currency'],
     worksheet_name=WORKSHEET_NAME,

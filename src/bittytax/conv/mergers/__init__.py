@@ -4,7 +4,6 @@ from . import (
     coincorner,
     etherscan,
     ftmscan,
-    hecoinfo,
     moonscan,
     optimism,
     polygonscan,

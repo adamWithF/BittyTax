@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2021
 
-from ..datamerge import DataMerge
+from ..datamerge import DataMerge, MergeDataRow, ParserRequired
 from ..out_record import TransactionOutRecord
 from ..parsers.polygonscan import POLYGON_INT, POLYGON_TXNS, POLYGON_TOKENS, POLYGON_NFTS, WALLET, WORKSHEET_NAME
 from .etherscan import _do_merge_etherscan
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS
+
 
 STAKE_ADDRESSES = [
     "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270", # Wrapped Matic
@@ -41,10 +43,10 @@ def merge_polygonscan(data_files):
 DataMerge(
     "PolygonScan fees & multi-token transactions",
     {
-        TXNS: {"req": DataMerge.MANDATORY, "obj": POLYGON_TXNS},
-        TOKENS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_TOKENS},
-        NFTS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_NFTS},
-        INTERNAL_TXNS: {"req": DataMerge.OPTIONAL, "obj": POLYGON_INT},
+        TXNS: {"req": ParserRequired.MANDATORY, "obj": POLYGON_TXNS},
+        TOKENS: {"req": ParserRequired.OPTIONAL, "obj": POLYGON_TOKENS},
+        NFTS: {"req": ParserRequired.OPTIONAL, "obj": POLYGON_NFTS},
+        INTERNAL_TXNS: {"req": ParserRequired.OPTIONAL, "obj": POLYGON_INT},
     },
     merge_polygonscan,
 )

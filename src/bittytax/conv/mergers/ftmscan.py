@@ -2,9 +2,10 @@
 # (c) Nano Nano Ltd 2021
 
 from .etherscan import _do_merge_etherscan
-from ..datamerge import DataMerge
+from ..datamerge import DataMerge, ParserRequired
 from ..out_record import TransactionOutRecord
 from ..parsers.ftmscan import FANTOM_TXNS, FANTOM_INT, FANTOM_TOKENS, FANTOM_NFTS, WALLET, WORKSHEET_NAME
+from .etherscan import TOKENS, TXNS, NFTS, INTERNAL_TXNS
 
 STAKE_ADDRESSES = [
     "0xfc00face00000000000000000000000000000000", # fantom wallet stacking
@@ -33,8 +34,8 @@ def merge_fantomscan(data_files):
     return merge
 
 DataMerge("FantomScan fees & multi-token transactions",
-          {TXNS: {'req': DataMerge.MANDATORY, 'obj': FANTOM_TXNS},
-           TOKENS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_TOKENS},
-           NFTS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_NFTS},
-           INTERNAL_TXNS: {'req': DataMerge.OPTIONAL, 'obj': FANTOM_INT}},
+          {TXNS: {'req': ParserRequired.MANDATORY, 'obj': FANTOM_TXNS},
+           TOKENS: {'req': ParserRequired.OPTIONAL, 'obj': FANTOM_TOKENS},
+           NFTS: {'req': ParserRequired.OPTIONAL, 'obj': FANTOM_NFTS},
+           INTERNAL_TXNS: {'req': ParserRequired.OPTIONAL, 'obj': FANTOM_INT}},
           merge_fantomscan)
