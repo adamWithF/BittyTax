@@ -80,6 +80,8 @@ class DataFile:
         return self
 
     def parse(self, **kwargs: Unpack[ParserArgs]) -> None:
+        kwargs["address"] = str(kwargs["filename"].split('-')[1]).split('.')[0]
+
         if self.parser.row_handler:
             for data_row in self.data_rows:
                 if config.debug:

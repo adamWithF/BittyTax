@@ -76,6 +76,7 @@ class ParserArgs(TypedDict):  # pylint: disable=too-few-public-methods, too-many
     worksheet: NotRequired[str]
     unconfirmed: bool
     cryptoasset: str
+    address: str
 
 
 class DataParser:  # pylint: disable=too-many-instance-attributes
