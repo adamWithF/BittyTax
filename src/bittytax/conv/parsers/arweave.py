@@ -4,21 +4,22 @@
 # Support for Arweave via viewblock.io
 
 from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
+from ..dataparser import DataParser, ParserType
+from ...bt_types import TrType
 
 WALLET = "Arweave"
 WORKSHEET_NAME = "Arweave"
 
-def parse_arweave(data_row, _parser, **_kwargs):
+def parse_arweave(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(row_dict['time'])
 
-    if row_dict['success'] != 'yes':
+    if not row_dict['hash']:
         # Failed txns should not have a Value_OUT
         return
 
-    if row_dict['direction'] == 'in':
-        data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
+    if row_dict['from'] == kwargs['address']:
+        data_row.t_record = TransactionOutRecord(TrType.DEPOSIT,
                                                  data_row.timestamp,
                                                  buy_quantity=get_quantity(row_dict),
                                                  buy_asset="AR",
@@ -27,7 +28,7 @@ def parse_arweave(data_row, _parser, **_kwargs):
                                                  wallet=get_wallet(row_dict['to']))
 
     else:
-        data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
+        data_row.t_record = TransactionOutRecord(TrType.WITHDRAWAL,
                                                  data_row.timestamp,
                                                  sell_quantity=get_quantity(row_dict),
                                                  sell_asset="AR",
@@ -45,8 +46,8 @@ def get_wallet_address(filename):
     return filename.split('-')[0]
 
 arweave_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
+    ParserType.EXPLORER,
     "Arweave",
-    ['hash','timestamp','time','height','from','direction','to','value','token','fee','method','success','error'],
+    ["hash","timestamp","time","height","size","contentType","value","from","to","fee","apps"],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_arweave)
