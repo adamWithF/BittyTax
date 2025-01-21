@@ -505,6 +505,7 @@ def parse_kucoin_account_history_funding(
     data_row: "DataRow", parser: DataParser, **kwargs: Unpack[ParserArgs]
 ) -> None:
     if "History_Funding" not in kwargs["filename"]:
+        # Only the Funding Account can contain airdrops
         raise DataFormatNotSupported(kwargs["filename"])
 
     row_dict = data_row.row_dict
@@ -655,7 +656,7 @@ DataParser(
     [
         "UID",
         "Account Type",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Coin",
         "Amount",
         "Fee",
@@ -674,7 +675,7 @@ DataParser(
     [
         "UID",
         "Account Type",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Remarks",
         "Status",
         "Fee",
@@ -692,7 +693,7 @@ DataParser(
     [
         "UID",
         "Account Type",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Coin",
         "Amount",
         "Fee",
@@ -731,7 +732,7 @@ DataParser(
     [
         "UID",
         "Account Type",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Remarks",
         "Status",
         "Fee",
@@ -752,7 +753,7 @@ DataParser(
         "UID",
         "Account Type",
         "Order ID",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Staked Coin",
         "Product Type",
         "Product Name",
@@ -780,11 +781,29 @@ DataParser(
         "Total Realized PNL",
         "Total Funding Fees",
         "Total Trading Fees",
-        lambda c: re.match(r"(^Position Opening Time\((UTC[-+]\d{2}:\d{2})\))", c),
-        lambda c: re.match(r"(^Position Closing Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Position Opening Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^,?Position Closing Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
     ],
     worksheet_name="Kucoin F",
     all_handler=parse_kucoin_futures,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Account History",
+    [
+        "UID",
+        "Account Type",
+        "Currency",
+        "Side",
+        "Amount",
+        "Fee",
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
+        "Remark",
+        "Type",  # New field
+    ],
+    worksheet_name="KuCoin A",
+    row_handler=parse_kucoin_account_history_funding,
 )
 
 # Account History_Funding Account (Bundle)
@@ -798,7 +817,7 @@ DataParser(
         "Side",
         "Amount",
         "Fee",
-        lambda c: re.match(r"(^Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Remark",
     ],
     worksheet_name="KuCoin A",
@@ -819,7 +838,7 @@ DataParser(
         "Filled Amount",
         "Filled Volume",
         "Filled Volume (USDT)",
-        lambda c: re.match(r"(^Filled Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Filled Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Fee",
         "Tax",
         "Maker/Taker",
@@ -861,7 +880,7 @@ DataParser(
         "UID",
         "Account Type",
         "Order ID",
-        lambda c: re.match(r"(^Order Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Order Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Symbol",
         "Side",
         "Order Type",
@@ -871,7 +890,7 @@ DataParser(
         "Filled Amount",
         "Filled Volume",
         "Filled Volume (USDT)",
-        lambda c: re.match(r"(^Filled Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Filled Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Fee",
         "Fee Currency",
         "Tax",  # New field
@@ -888,7 +907,7 @@ DataParser(
         "UID",
         "Account Type",
         "Order ID",
-        lambda c: re.match(r"(^Order Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Order Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Symbol",
         "Side",
         "Order Type",
@@ -898,7 +917,7 @@ DataParser(
         "Filled Amount",
         "Filled Volume",
         "Filled Volume (USDT)",
-        lambda c: re.match(r"(^Filled Time\((UTC[-+]\d{2}:\d{2})\))", c),
+        lambda c: re.match(r"(^Filled Time\((UTC|UTC[-+]\d{2}:\d{2})\))", c),
         "Fee",
         "Fee Currency",
         "Status",
