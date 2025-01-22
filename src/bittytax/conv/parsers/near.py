@@ -7,11 +7,12 @@ import time
 
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserType
+from ...bt_types import TrType
 
 WALLET = "Near"
 WORKSHEET_NAME = "Near"
 
-def parse_near(data_row, _parser, **_kwargs):
+def parse_near(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
     data_row.timestamp = DataParser.parse_timestamp(row_dict['Time'])
 
@@ -20,8 +21,8 @@ def parse_near(data_row, _parser, **_kwargs):
         return
 
     if row_dict['Method'] in ['TRANSFER', 'deposit_and_stake', 'withdraw_all']:
-        if get_wallet_address(_kwargs['filename']) == row_dict['To']:
-            data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
+        if  row_dict['To'] in kwargs['filename']:
+            data_row.t_record = TransactionOutRecord(TrType.DEPOSIT,
                                                      data_row.timestamp,
                                                      buy_quantity=abs(float(row_dict['Deposit Value'].replace(',', ''))),
                                                      buy_asset='NEAR',
@@ -30,7 +31,7 @@ def parse_near(data_row, _parser, **_kwargs):
                                                      wallet=get_wallet(row_dict['To']))
 
         else:
-            data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.t_record = TransactionOutRecord(TrType.WITHDRAWAL,
                                                      data_row.timestamp,
                                                      sell_quantity=abs(float(row_dict['Deposit Value'].replace(',', ''))),
                                                      sell_asset='NEAR',

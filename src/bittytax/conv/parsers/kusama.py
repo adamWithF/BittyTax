@@ -9,6 +9,7 @@ import ntpath
 from ..exceptions import DataFilenameError
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserType
+from ...bt_types import TrType
 
 WALLET = "Kusama"
 WORKSHEET_NAME = "Kusama SubScan"
@@ -29,7 +30,7 @@ def parse_subscan_transfers(data_row, _parser, **kwargs):
 
     if row_dict["To"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
-            TransactionOutRecord.TYPE_DEPOSIT,
+            TrType.DEPOSIT,
             data_row.timestamp,
             buy_quantity=row_dict["Value"],
             buy_asset=row_dict["Symbol"],
@@ -37,7 +38,7 @@ def parse_subscan_transfers(data_row, _parser, **kwargs):
         )
     else:
         data_row.t_record = TransactionOutRecord(
-            TransactionOutRecord.TYPE_WITHDRAWAL,
+            TrType.WITHDRAWAL,
             data_row.timestamp,
             sell_quantity=row_dict["Value"],
             sell_asset=row_dict["Symbol"],

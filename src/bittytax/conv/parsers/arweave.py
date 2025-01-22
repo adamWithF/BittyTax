@@ -18,7 +18,7 @@ def parse_arweave(data_row, _parser, **kwargs):
         # Failed txns should not have a Value_OUT
         return
 
-    if row_dict['from'] == kwargs['address']:
+    if row_dict['from'] in kwargs['filename']:
         data_row.t_record = TransactionOutRecord(TrType.DEPOSIT,
                                                  data_row.timestamp,
                                                  buy_quantity=get_quantity(row_dict),
