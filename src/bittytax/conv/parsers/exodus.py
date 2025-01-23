@@ -59,8 +59,16 @@ def parse_exodus_v2(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
             note=row_dict["PERSONALNOTE"],
         )
     elif row_dict["TYPE"] == "deposit (failed)":
-        # Skip failures
-        return
+        data_row.t_record = TransactionOutRecord(
+            TrType.SPEND,
+            data_row.timestamp,
+            # sell_quantity=sell_quantity,
+            # sell_asset=sell_asset,
+            fee_quantity=fee_quantity,
+            fee_asset=fee_asset,
+            wallet=WALLET,
+            note=row_dict["PERSONALNOTE"],
+        )
     elif row_dict["TYPE"] == "withdrawal":
         sell_quantity, sell_asset = _split_asset(row_dict["COINAMOUNT"])
 
@@ -69,6 +77,17 @@ def parse_exodus_v2(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
             data_row.timestamp,
             sell_quantity=sell_quantity,
             sell_asset=sell_asset,
+            fee_quantity=fee_quantity,
+            fee_asset=fee_asset,
+            wallet=WALLET,
+            note=row_dict["PERSONALNOTE"],
+        )
+    elif row_dict["TYPE"] == "withdrawal (failed)":
+        data_row.t_record = TransactionOutRecord(
+            TrType.SPEND,
+            data_row.timestamp,
+            # sell_quantity=sell_quantity,
+            # sell_asset=sell_asset,
             fee_quantity=fee_quantity,
             fee_asset=fee_asset,
             wallet=WALLET,
@@ -114,8 +133,16 @@ def parse_exodus_v1(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
             note=row_dict["PERSONALNOTE"],
         )
     elif row_dict["TYPE"] == "deposit (failed)":
-        # Skip failures
-        return
+        data_row.t_record = TransactionOutRecord(
+            TrType.SPEND,
+            data_row.timestamp,
+            # sell_quantity=sell_quantity,
+            # sell_asset=sell_asset,
+            fee_quantity=fee_quantity,
+            fee_asset=fee_asset,
+            wallet=WALLET,
+            note=row_dict["PERSONALNOTE"],
+        )
     elif row_dict["TYPE"] == "withdrawal":
         data_row.tx_raw = TxRawPos(
             parser.in_header.index("OUTTXID"), tx_dest_pos=parser.in_header.index("TOADDRESS")
@@ -125,6 +152,17 @@ def parse_exodus_v1(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
             data_row.timestamp,
             sell_quantity=abs(Decimal(row_dict["OUTAMOUNT"])),
             sell_asset=row_dict["OUTCURRENCY"],
+            fee_quantity=fee_quantity,
+            fee_asset=fee_asset,
+            wallet=WALLET,
+            note=row_dict["PERSONALNOTE"],
+        )
+    elif row_dict["TYPE"] == "withdrawal (failed)":
+        data_row.t_record = TransactionOutRecord(
+            TrType.SPEND,
+            data_row.timestamp,
+            # sell_quantity=sell_quantity,
+            # sell_asset=sell_asset,
             fee_quantity=fee_quantity,
             fee_asset=fee_asset,
             wallet=WALLET,
