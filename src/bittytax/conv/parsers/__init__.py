@@ -58,6 +58,7 @@ from . import (
     hitbtc,
     hotbit,
     ii,
+    kavascan,
     kinesis,
     koinly,
     kraken,
