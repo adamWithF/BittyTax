@@ -5,7 +5,6 @@ import atexit
 import json
 import os
 import platform
-import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
@@ -29,7 +28,6 @@ from ..bt_types import (
 from ..config import config
 from ..constants import CACHE_DIR, WARNING
 from ..version import __version__
-from ..exceptions import DataFetchFailureError
 from .exceptions import UnexpectedDataSourceAssetIdError
 
 
@@ -57,24 +55,10 @@ class DataSourceBase:
     TIME_OUT = 30
 
     def __init__(self) -> None:
-        self.headers = {"user-agent": self.USER_AGENT}
-        self.assets: dict[assetsymbol, dssymboltoassetdata] = {}
-        self.ids: dict[assetid, dsidtoassetdata] = {}
+        self.headers = {"User-Agent": self.USER_AGENT}
+        self.assets: Dict[AssetSymbol, DsSymbolToAssetData] = {}
+        self.ids: Dict[AssetId, DsIdToAssetData] = {}
         self.prices = self._load_prices()
-
-        self.index = self.load_index()
-        self.assets = {}
-        self.ids = {}
-
-        if self.index:
-            self.ids = {
-                c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
-                for c in self.index
-            }
-            self.assets = {
-                c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
-                for c in self.index
-            }
 
         for pair in sorted(self.prices):
             if config.debug:
@@ -85,21 +69,18 @@ class DataSourceBase:
     def name(self) -> DataSourceName:
         return DataSourceName(self.__class__.__name__)
 
-    def get_json(self, url: str, repeat_after=0) -> Any:
+    def get_json(self, url: str) -> Any:
         if config.debug:
             print(f"{Fore.YELLOW}price: GET {url} {list(self.headers.keys())}")
 
-        while True:
-            response = requests.get(url, headers=self.headers, timeout=self.TIME_OUT)
+        response = requests.get(url, headers=self.headers, timeout=self.TIME_OUT)
 
-            if response.status_code in [401, 402, 403, 429, 502, 503, 504]:
-                try:
-                    response.raise_for_status()
-                except:
-                    pass
-                time.sleep(repeat_after)
+        if response.status_code in [401, 402, 403, 429, 502, 503, 504]:
+            response.raise_for_status()
 
+        if response:
             return response.json()
+        return {}
 
     def update_prices(
         self, pair: TradingPair, prices: Dict[Date, DsPriceData], timestamp: Timestamp
@@ -156,41 +137,6 @@ class DataSourceBase:
                 for pair in self.prices
             }
             json.dump(json_prices, price_cache, indent=4, sort_keys=True)
-
-    def load_index(self):
-        filename = os.path.join(CACHE_DIR, f"{self.name()}_index.json")
-        if not os.path.exists(filename):
-            return []
-
-        try:
-            with open(filename, "r", encoding="utf-8") as index_cache:
-                json_index = json.load(index_cache)
-                return json_index
-        except (IOError, ValueError):
-            print(f"{WARNING} Index data cached for {self.name()} could not be loaded")
-            return []
-
-    def dump_prices(self):
-        with open(
-            os.path.join(CACHE_DIR, self.name() + ".json"), "w", encoding="utf-8"
-        ) as price_cache:
-            json_prices = {
-                pair: {
-                    f"{date:%Y-%m-%d}": {
-                        "price": self.decimal_to_str(price["price"]),
-                        "url": price["url"],
-                    }
-                    for date, price in self.prices[pair].items()
-                }
-                for pair in self.prices
-            }
-            json.dump(json_prices, price_cache, indent=4, sort_keys=True)
-
-    def dump_index(self):
-        with open(
-            os.path.join(CACHE_DIR, f"{self.name()}_index.json"), "w", encoding="utf-8"
-        ) as index_cache:
-            json.dump(self.index, index_cache, indent=2, sort_keys=True)
 
     def get_config_assets(self) -> None:
         for symbol in config.data_source_select:
@@ -464,7 +410,6 @@ class CryptoCompare(DataSourceBase):
             .lower(): {"symbol": c[1]["Symbol"].strip().upper(), "name": c[1]["CoinName"].strip()}
             for c in json_resp["Data"].items()
         }
-
         self.assets = {
             c[1]["Symbol"]
             .strip()
@@ -480,10 +425,8 @@ class CryptoCompare(DataSourceBase):
             asset_id = self.assets[asset]["asset_id"]
 
         json_resp = self.get_json(
-            # f"{self.api_root}/data/price?extraParams={self.USER_AGENT}"
-            # f"&fsym={asset_id}&tsyms={quote}"
-            f"https://min-api.cryptocompare.com/data/price"
-            f"?fsym={asset}&tsyms={quote}&extraParams={self.USER_AGENT}"
+            f"{self.api_root}/data/price?extraParams={self.USER_AGENT}"
+            f"&fsym={asset_id}&tsyms={quote}"
         )
         return Decimal(repr(json_resp[quote])) if quote in json_resp else None
 
@@ -499,16 +442,10 @@ class CryptoCompare(DataSourceBase):
 
         url = (
             f"{self.api_root}/data/histoday?aggregate=1"
-            f"&extraParams={self.USER_AGENT}"
-            f"&fsym={asset}&tsym={quote}"
+            f"&extraParams={self.USER_AGENT}&fsym={asset_id}&tsym={quote}"
             f"&limit={self.MAX_DAYS}"
             f"&toTs={self.epoch_time(Timestamp(timestamp + timedelta(days=self.MAX_DAYS)))}"
-            # f"&toTs={self.epoch_time(timestamp + timedelta(days=1))}"
         )
-
-        if config.crypto_compare_api_key:
-            url = f"{url}&api_key={config.crypto_compare_api_key}"
-
         json_resp = self.get_json(url)
         # Type=2 - CCCAGG market does not exist for this coin pair
         if json_resp["Response"] != "Success" and json_resp["Type"] != 2:
@@ -520,7 +457,7 @@ class CryptoCompare(DataSourceBase):
             self.update_prices(
                 pair,
                 {
-                    f'{datetime.fromtimestamp(d["time"]):%Y-%m-%d}': {
+                    Date(datetime.fromtimestamp(d["time"]).date()): {
                         "price": Decimal(repr(d["close"])) if "close" in d and d["close"] else None,
                         "url": SourceUrl(url),
                     }
@@ -567,31 +504,6 @@ class CoinGecko(DataSourceBase):
                     "asset_id": c["id"],
                     "name": c["name"].strip(),
                 }
-
-        # page = 1
-
-        # if not self.assets or not self.ids:
-        #     while True:
-        #         print(f"query Coingecko: query v3/coins/markets?vs_currency=btc&per_page=250&page={page}&order=market_cap_asc")
-        #         json_resp = self.get_json(f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&per_page=250&page={page}&order=market_cap_asc", 60)
-        #         page += 1
-        #         if json_resp:
-        #             self.index += json_resp
-        #             continue
-        #         else:
-        #             break
-
-        #     self.dump_index()
-        #     self.ids = {
-        #         c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
-        #         for c in self.index
-        #     }
-        #     self.assets = {
-        #         c["symbol"].strip().upper(): {"id": c["id"], "name": c["name"].strip()}
-        #         for c in self.index
-        #     }
-
-        # self.dump_index()
         self.get_config_assets()
 
     def get_latest(
@@ -645,26 +557,6 @@ class CoinGecko(DataSourceBase):
             )
 
 
-# class Local(DataSourceBase):
-#     def __init__(self):
-#         super().__init__()
-#         self.prices = self.load_prices()
-#         self.assets = {}
-
-#         for key, _ in self.prices.items():
-#             symbol = key.split("/")[0].upper()
-#             self.assets[symbol] = {
-#                 "id": symbol,
-#                 "name": symbol
-#             }
-
-#     def get_historical(self, asset, quote, timestamp):
-#         pair = f"{asset}/{quote}".upper()
-#         if "pair" in self.prices and f"{timestamp:%Y-%m-%d}" in self.prices[pair]:
-#             return self.prices[pair][f"{timestamp:%Y-%m-%d}"]
-#         print(f"{WARNING} Price for {asset} on {timestamp:%Y-%m-%d} is not available")
-
-
 class CoinPaprika(DataSourceBase):
     MAX_DAYS = 5000
 
@@ -678,11 +570,6 @@ class CoinPaprika(DataSourceBase):
             self.api_root = "https://api.coinpaprika.com/v1"
 
         json_resp = self.get_json(f"{self.api_root}/coins")
-        # json_resp = self.get_json("https://api.coinpaprika.com/v1/coins")
-
-        if "error" in json_resp:
-            raise DataFetchFailureError(json_resp['error'])
-
         self.ids = {
             c["id"]: {"symbol": c["symbol"].strip().upper(), "name": c["name"].strip()}
             for c in json_resp
@@ -724,13 +611,8 @@ class CoinPaprika(DataSourceBase):
             f"{self.api_root}/tickers/{asset_id}/historical"
             f"?start={timestamp:%Y-%m-%d}&limit={self.MAX_DAYS}&quote={quote}&interval=1d"
         )
-        # url =  f"https://api.coinpaprika.com/v1/tickers/{asset_id}/historical?start={timestamp:%Y-%m-%d}&limit={COINPAPRIKA_MAX_DAYS}&quote={quote}&interval=1d"
 
         json_resp = self.get_json(url)
-
-        if "error" in json_resp:
-            raise DataFetchFailureError(url, json_resp['error'])
-
         pair = self.pair(asset, quote)
         self.update_prices(
             pair,

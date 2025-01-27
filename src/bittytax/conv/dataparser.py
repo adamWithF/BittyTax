@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2019
 
-import ntpath
 import sys
 from datetime import datetime, tzinfo
 from decimal import Decimal
