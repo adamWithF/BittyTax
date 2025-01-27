@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # (c) Nano Nano Ltd 2019
 
+import time
 import atexit
 import json
 import os
@@ -540,8 +541,41 @@ class CoinGecko(DataSourceBase):
             # Public API is limited to 365 days of historical price data
             days = "365"
 
-        url = f"{self.api_root}/coins/{asset_id}/market_chart?vs_currency={quote}&days={days}"
-        json_resp = self.get_json(url)
+        # Added a simple retry loop
+        MAX_RETRIES = 3
+        DELAY = 120
+        e = None
+
+        for i in range(0, MAX_RETRIES+1):
+            url = (
+                f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart"
+                f"?vs_currency={quote}&days={days}" # changed max to 365
+            )
+            try:
+                json_resp = self.get_json(url)
+                if "prices" in json_resp:
+                    break
+                else:
+                    print('json', json_resp)
+                if not json_resp:
+                    print(f"{Fore.YELLOW}: CoinGecko rejected request for {asset} history.")
+
+            except Exception as e:
+                print('exception', repr(e))
+                print(e.response.text)
+                print(e.response.status_code)
+                # print(e.response.headers) # TODO use header 'retry-after'
+                # Note: could improve this by catching requests `HTTPException`
+                # and checking status_code == 429, then only retry with delay in that case
+
+            if i < MAX_RETRIES:
+                print(f"{Fore.YELLOW}: Trying again in {DELAY} sec.")
+                time.sleep(DELAY)
+            elif e is Exception:
+                raise e
+            else:
+                raise Exception('Max retries')
+
         pair = self.pair(asset, quote)
         if "prices" in json_resp:
             self.update_prices(
@@ -555,7 +589,6 @@ class CoinGecko(DataSourceBase):
                 },
                 timestamp,
             )
-
 
 class CoinPaprika(DataSourceBase):
     MAX_DAYS = 5000
