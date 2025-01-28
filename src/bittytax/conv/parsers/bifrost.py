@@ -10,6 +10,7 @@ from ..exceptions import DataFilenameError
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserType
 from ...bt_types import TrType
+from typing import Dict
 
 WALLET = "Bifrost"
 WORKSHEET_NAME = "Bifrost SubScan"
@@ -35,6 +36,7 @@ def parse_subscan_transfers(data_row, _parser, **kwargs):
             buy_quantity=row_dict["Value"],
             buy_asset=row_dict["Symbol"],
             wallet=get_wallet(row_dict["To"]),
+            note=_get_note(row_dict)
         )
     else:
         data_row.t_record = TransactionOutRecord(
@@ -43,7 +45,11 @@ def parse_subscan_transfers(data_row, _parser, **kwargs):
             sell_quantity=row_dict["Value"],
             sell_asset=row_dict["Symbol"],
             wallet=get_wallet(row_dict["From"]),
+            note=_get_note(row_dict)
         )
+
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 # def parse_subscan_xcm(data_row, _parser, **kwargs):
 #     row_dict = data_row.row_dict

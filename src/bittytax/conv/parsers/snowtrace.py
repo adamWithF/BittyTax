@@ -3,6 +3,7 @@
 
 from decimal import Decimal
 from typing import TYPE_CHECKING
+from typing import Dict
 
 from typing_extensions import Unpack
 
@@ -96,6 +97,7 @@ def parse_snowtrace_tokens(
             buy_quantity=quantity,
             buy_asset=asset,
             wallet=_get_wallet(row_dict["to"]),
+            note=_get_note(row_dict),
         )
     elif row_dict["from"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -104,6 +106,7 @@ def parse_snowtrace_tokens(
             sell_quantity=quantity,
             sell_asset=asset,
             wallet=_get_wallet(row_dict["from"]),
+            note=_get_note(row_dict),
         )
     else:
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
@@ -129,6 +132,7 @@ def parse_snowtrace_tokens(data_row, _parser, **kwargs):
             buy_quantity=quantity,
             buy_asset=asset,
             wallet=_get_wallet(row_dict["to"]),
+            note=_get_note(row_dict),
         )
     elif row_dict["from"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -137,6 +141,7 @@ def parse_snowtrace_tokens(data_row, _parser, **kwargs):
             sell_quantity=quantity,
             sell_asset=asset,
             wallet=_get_wallet(row_dict["from"]),
+            note=_get_note(row_dict),
         )
     else:
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
@@ -154,13 +159,17 @@ def parse_snowtrace_internal(data_row, _parser, **_kwargs):
                                                  data_row.timestamp,
                                                  buy_quantity=row_dict['Value_IN(FTM)'],
                                                  buy_asset="FTM",
-                                                 wallet=get_wallet(row_dict['TxTo']))
+                                                 wallet=_get_wallet(row_dict['TxTo']),
+                                                 note=_get_note(row_dict)
+                                                 )
     elif Decimal(row_dict['Value_OUT(FTM)']) > 0:
         data_row.t_record = TransactionOutRecord(TrType.WITHDRAWAL,
                                                  data_row.timestamp,
                                                  sell_quantity=row_dict['Value_OUT(FTM)'],
                                                  sell_asset="FTM",
-                                                 wallet=get_wallet(row_dict['From']))
+                                                 wallet=_get_wallet(row_dict['From']),
+                                                 note=_get_note(row_dict)
+                                                 )
 
 def parse_snowtrace_nfts(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
@@ -173,6 +182,7 @@ def parse_snowtrace_nfts(data_row, _parser, **kwargs):
             buy_quantity=1,
             buy_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
             wallet=_get_wallet(row_dict["To"]),
+            note=_get_note(row_dict)
         )
     elif row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -181,10 +191,13 @@ def parse_snowtrace_nfts(data_row, _parser, **kwargs):
             sell_quantity=1,
             sell_asset=f'{row_dict["TokenName"]} #{row_dict["TokenId"]}',
             wallet=_get_wallet(row_dict["From"]),
+            note=_get_note(row_dict)
         )
     else:
         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 # Tokens and internal transactions have the same header as Etherscan
 avax_txns = DataParser(

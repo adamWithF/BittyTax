@@ -4,6 +4,7 @@
 import re
 from decimal import Decimal
 from typing import TYPE_CHECKING
+from typing import Dict
 
 from typing_extensions import Unpack
 
@@ -47,9 +48,11 @@ def parse_aptoscan_txns(
             wallet=_get_wallet(row_dict["From"]),
             fee_asset="APT",
             fee_quantity=Decimal(row_dict["Fee"]),
-            # note=_get_note(row_dict["Function"]),
+            note=_get_note(row_dict["Function"]),
         )
 
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 
 def parse_aptoscan_coin(

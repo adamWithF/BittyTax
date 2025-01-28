@@ -6,6 +6,7 @@
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserType
 from ...bt_types import TrType
+from typing import Dict
 
 WALLET = "Arweave"
 WORKSHEET_NAME = "Arweave"
@@ -25,7 +26,9 @@ def parse_arweave(data_row, _parser, **kwargs):
                                                  buy_asset="AR",
                                                  fee_quantity=row_dict['fee'].split(' ')[0],
                                                  fee_asset="AR",
-                                                 wallet=get_wallet(row_dict['to']))
+                                                 wallet=get_wallet(row_dict['to']),
+                                                 note=_get_note(row_dict)
+                                                 )
 
     else:
         data_row.t_record = TransactionOutRecord(TrType.WITHDRAWAL,
@@ -34,7 +37,12 @@ def parse_arweave(data_row, _parser, **kwargs):
                                                  sell_asset="AR",
                                                  fee_quantity=row_dict['fee'].split(' ')[0],
                                                  fee_asset="AR",
-                                                 wallet=get_wallet(row_dict['from']))
+                                                 wallet=get_wallet(row_dict['from']),
+                                                 note=_get_note(row_dict)
+                                                 )
+
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 def get_quantity(row_dict):
     return abs(float(row_dict['value'].split(' ')[0].replace(',', '')))

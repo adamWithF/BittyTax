@@ -4,6 +4,7 @@
 
 from decimal import Decimal
 from typing import TYPE_CHECKING
+from typing import Dict
 
 from typing_extensions import Unpack
 
@@ -12,7 +13,7 @@ from ..dataparser import DataParser, ParserArgs, ParserType
 from ..datarow import TxRawPos
 from ..exceptions import DataFilenameError
 from ..out_record import TransactionOutRecord
-from .etherscan import _get_note
+# from .etherscan import _get_note
 
 if TYPE_CHECKING:
     from ..datarow import DataRow
@@ -66,6 +67,8 @@ def parse_kavascan(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[Pa
             note=_get_note(row_dict),
         )
 
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 def _get_wallet(address: str) -> str:
     return f"{WALLET}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"

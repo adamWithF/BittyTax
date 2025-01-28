@@ -8,6 +8,7 @@ import time
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserType
 from ...bt_types import TrType
+from typing import Dict
 
 WALLET = "Near"
 WORKSHEET_NAME = "Near"
@@ -27,8 +28,10 @@ def parse_near(data_row, _parser, **kwargs):
                                                      buy_quantity=abs(float(row_dict['Deposit Value'].replace(',', ''))),
                                                      buy_asset='NEAR',
                                                      fee_quantity=row_dict['Txn Fee'],
-                                                     fee_asset='NEAR',
-                                                     wallet=get_wallet(row_dict['To']))
+                                                    fee_asset='NEAR',
+                                                     wallet=get_wallet(row_dict['To']),
+                                                     note=_get_note(row_dict)
+                                                     )
 
         else:
             data_row.t_record = TransactionOutRecord(TrType.WITHDRAWAL,
@@ -37,8 +40,11 @@ def parse_near(data_row, _parser, **kwargs):
                                                      sell_asset='NEAR',
                                                      fee_quantity=row_dict['Txn Fee'],
                                                      fee_asset='NEAR',
-                                                     wallet=get_wallet(row_dict['From']))
-
+                                                     wallet=get_wallet(row_dict['From'])
+                                                     note=_get_note(row_dict)
+                                                     )
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])

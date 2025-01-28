@@ -7,6 +7,7 @@ import time
 
 from ..out_record import TransactionOutRecord
 from ..dataparser import DataParser, ParserArgs, ParserType
+from typing import Dict
 
 WALLET = "Solana"
 WORKSHEET_NAME = "Solana SolScan"
@@ -23,7 +24,9 @@ def parse_solana(data_row, _parser, **kwargs):
                                                      buy_asset=row_dict['Symbol(off-chain)'],
                                                      fee_quantity=row_dict['Fee (SOL)'],
                                                      fee_asset=row_dict['Symbol(off-chain)'],
-                                                     wallet=get_wallet(row_dict['SolTransfer Destination']))
+                                                     wallet=get_wallet(row_dict['SolTransfer Destination']),
+                                                 note=_get_note(row_dict)
+                                                     )
 
         else:
             data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
@@ -32,7 +35,12 @@ def parse_solana(data_row, _parser, **kwargs):
                                                      sell_asset=row_dict['Symbol(off-chain)'],
                                                      fee_quantity=row_dict['Fee (SOL)'],
                                                      fee_asset=row_dict['Symbol(off-chain)'],
-                                                     wallet=get_wallet(row_dict['SolTransfer Source']))
+                                                     wallet=get_wallet(row_dict['SolTransfer Source']),
+                                                 note=_get_note(row_dict)
+                                                     )
+
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 def get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])

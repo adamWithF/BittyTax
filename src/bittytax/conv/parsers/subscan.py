@@ -13,6 +13,7 @@ from ..dataparser import DataParser, ParserArgs, ParserType
 from ..datarow import TxRawPos
 from ..exceptions import DataFilenameError, UnknownCryptoassetError
 from ..out_record import TransactionOutRecord
+from typing import Dict
 
 if TYPE_CHECKING:
     from ..datarow import DataRow
@@ -53,6 +54,7 @@ def parse_subscan_transfers(
             buy_quantity=Decimal(row_dict["Value"]),
             buy_asset=row_dict["Symbol"],
             wallet=_get_wallet(network, row_dict["To"]),
+            note=_get_note(row_dict)
         )
     elif row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -61,10 +63,13 @@ def parse_subscan_transfers(
             sell_quantity=Decimal(row_dict["Value"]),
             sell_asset=row_dict["Symbol"],
             wallet=_get_wallet(network, row_dict["From"]),
+            note=_get_note(row_dict)
         )
     else:
         raise DataFilenameError(kwargs["filename"], f"{network} address")
 
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 def _get_network(filename: str) -> str:
     for network in NETWORK_TO_TOKEN:
@@ -91,6 +96,7 @@ def parse_subscan_paidout(
         buy_quantity=Decimal(row_dict["Value"]),
         buy_asset=token,
         wallet=_get_wallet(network, row_dict["Pool"]),
+        note=_get_note(row_dict)
     )
 
 
@@ -135,56 +141,3 @@ DataParser(
     worksheet_name="Subscan",
     row_handler=parse_subscan_paidout,
 )
-
-'''
-=======
-# (c)
-
-# Support for Polkadot, Kusama and others via SubScan
-
-import time
-
-from ..out_record import TransactionOutRecord
-from ..dataparser import DataParser
-
-WALLET = "Polkadot / Kusama"
-WORKSHEET_NAME = "SubScan"
-
-def parse_subscan(data_row, _parser, **_kwargs):
-    row_dict = data_row.row_dict
-    data_row.timestamp = DataParser.parse_timestamp(row_dict['Date'])
-
-    if row_dict['Result'] != 'true':
-        # Failed txns should not have a Value_OUT
-        return
-
-    # depending on To From values, compare to local address below
-    if get_wallet_address(_kwargs['filename']) == row_dict['To']:
-        data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_DEPOSIT,
-                                                 data_row.timestamp,
-                                                 buy_quantity=row_dict['Value'],
-                                                 buy_asset=row_dict['Symbol'],
-                                                 wallet=get_wallet(row_dict['To']))
-
-    else:
-        data_row.t_record = TransactionOutRecord(TransactionOutRecord.TYPE_WITHDRAWAL,
-                                                 data_row.timestamp,
-                                                 sell_quantity=row_dict['Value'],
-                                                 sell_asset=row_dict['Symbol'],
-                                                 wallet=get_wallet(row_dict['From']))
-
-def get_wallet(address):
-    return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])
-
-def get_wallet_address(filename):
-    return filename.split('-')[0]
-
-
-subscan_txns = DataParser(
-    DataParser.TYPE_EXPLORER,
-    "SubScan",
-    ['Extrinsic ID','Date','Block','Hash','Symbol','From','To','Value','Result'],
-    worksheet_name=WORKSHEET_NAME,
-    row_handler=parse_subscan)
->>>>>>> theirs
-'''
