@@ -128,6 +128,27 @@ def parse_poloniex_distributions(
     )
 
 
+
+DataParser(
+    ParserType.EXCHANGE,
+    "Poloniex Trades",
+    [
+        "Date",
+        "Market",
+        "Type",
+        "Side",
+        "Price",
+        "Amount",
+        "Total",
+        "Fee",
+        "Order Number",
+        "Fee Currency",
+        "Fee Total"
+    ],
+    worksheet_name="Poloniex T",
+    row_handler=parse_poloniex_trades,
+)
+
 DataParser(
     ParserType.EXCHANGE,
     "Poloniex Trades",
