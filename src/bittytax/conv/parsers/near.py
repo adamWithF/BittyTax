@@ -40,7 +40,7 @@ def parse_near(data_row, _parser, **kwargs):
                                                      sell_asset='NEAR',
                                                      fee_quantity=row_dict['Txn Fee'],
                                                      fee_asset='NEAR',
-                                                     wallet=get_wallet(row_dict['From'])
+                                                     wallet=get_wallet(row_dict['From']),
                                                      note=_get_note(row_dict)
                                                      )
 def _get_note(row_dict: Dict[str, str]) -> str:
