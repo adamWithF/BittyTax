@@ -36,18 +36,16 @@ def parse_aptoscan_txns(
         parser.in_header.index("To"),
     )
 
-    if row_dict["Success"] != "TRUE":
+    if row_dict["Success"] != "true":
         return
 
     if row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
             TrType.SPEND,
             data_row.timestamp,
-            sell_quantity=Decimal(row_dict["Amount"]),
+            sell_quantity=Decimal(row_dict["Fee"]),
             sell_asset="APT",
             wallet=_get_wallet(row_dict["From"]),
-            fee_asset="APT",
-            fee_quantity=Decimal(row_dict["Fee"]),
             note=_get_note(row_dict),
         )
 
@@ -63,7 +61,7 @@ def parse_aptoscan_coin(
         parser.in_header.index("To"),
     )
 
-    if row_dict["Success"] != "true":
+    if row_dict["Success"] != "TRUE":
         return
 
     if row_dict["To"].lower() in kwargs["filename"].lower():
@@ -71,7 +69,7 @@ def parse_aptoscan_coin(
             TrType.DEPOSIT,
             data_row.timestamp,
             buy_quantity=Decimal(row_dict["Amount"]),
-            buy_asset=_get_asset(row_dict["Coin_Type"]) if row_dict["Coin_Type"]  else "APT",
+            buy_asset=_get_asset(row_dict["Asset"]),
             wallet=_get_wallet(row_dict["To"]),
             note=_get_note(row_dict),
         )
@@ -80,17 +78,16 @@ def parse_aptoscan_coin(
             TrType.WITHDRAWAL,
             data_row.timestamp,
             sell_quantity=Decimal(row_dict["Amount"]),
-            sell_asset=_get_asset(row_dict["Coin_Type"]) if row_dict["Coin_Type"] else "APT",
+            sell_asset=_get_asset(row_dict["Asset"]),
             fee_quantity=Decimal(row_dict["Fee"]),
             fee_asset="APT",
             wallet=_get_wallet(row_dict["From"]),
             note=_get_note(row_dict),
         )
     else:
-        pass
-
-def _get_note(row_dict: Dict[str, str]) -> str:
-    return str(row_dict)
+        return
+        # print("parse_aptoscan_coin")
+        # raise DataFilenameError(kwargs["filename"], "Aptos address")
 
 
 def parse_aptoscan_tokens(
@@ -114,6 +111,7 @@ def parse_aptoscan_tokens(
             buy_quantity=Decimal(1),
             buy_asset=_get_asset(row_dict["Token"], is_nft=True),
             wallet=_get_wallet(row_dict["To"]),
+            note=_get_note(row_dict),
         )
     elif row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -124,9 +122,12 @@ def parse_aptoscan_tokens(
             fee_quantity=Decimal(row_dict["Fee"]),
             fee_asset="APT",
             wallet=_get_wallet(row_dict["From"]),
+            note=_get_note(row_dict),
         )
     else:
-        raise DataFilenameError(kwargs["filename"], "Aptos filename")
+        return
+        # print("parse_aptoscan_tokens")
+        # raise DataFilenameError(kwargs["filename"], "Aptos address")
 
 
 def _get_asset(token_str: str, is_nft: bool = False) -> str:
@@ -140,25 +141,28 @@ def _get_asset(token_str: str, is_nft: bool = False) -> str:
         token_symbol = match.group(3)
         if token_symbol in ASSET_NORMALISE:
             return ASSET_NORMALISE[token_symbol]
-    return token_symbol
+        return token_symbol
 
 
-def _get_wallet(filename: str) -> str:
-    return f"{WALLET}-{filename.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
+def _get_wallet(address: str) -> str:
+    return f"{WALLET}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 apt_txns = DataParser(
     ParserType.EXPLORER,
     "Aptoscan (Transactions)",
-    ["Version", "Block", "Time", "From", "To", "Asset", "Amount", "Fee", "Success"],
+    ["Version", "Block", "Time", "Coin_Type", "From", "To", "Amount", "Fee", "Success"],
     worksheet_name="Aptoscan",
     row_handler=parse_aptoscan_txns,
 )
 
+
 apt_tokens = DataParser(
     ParserType.EXPLORER,
     "Aptoscan (Coin Transfers)",
-    ["Version", "Block", "Time", "Coin_Type", "From", "To", "Amount", "Fee", "Success"],
+    ["Version", "Block", "Time","From", "To", "Asset","Amount", "Fee", "Success"],
     worksheet_name="Aptoscan",
     row_handler=parse_aptoscan_coin,
 )
