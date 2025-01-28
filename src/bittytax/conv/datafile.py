@@ -80,6 +80,8 @@ class DataFile:
         return self
 
     def parse(self, **kwargs: Unpack[ParserArgs]) -> None:
+        kwargs["address"] = str(kwargs["filename"].split('-')[1]).split('.')[0]
+
         if self.parser.row_handler:
             for data_row in self.data_rows:
                 if config.debug:
@@ -148,7 +150,7 @@ class DataFile:
         args: argparse.Namespace,
     ) -> None:
         reader = cls.get_cell_values_xlsx(worksheet.rows)
-        parser = cls.get_parser(reader)
+        parser = cls.get_parser(reader, filename)
 
         if parser is None:
             raise DataFormatUnrecognised(filename, worksheet.title)
@@ -192,7 +194,7 @@ class DataFile:
         cls, worksheet: xlrd.sheet.Sheet, datemode: int, filename: str, args: argparse.Namespace
     ) -> None:
         reader = cls.get_cell_values_xls(worksheet.get_rows(), datemode)
-        parser = cls.get_parser(reader)
+        parser = cls.get_parser(reader, filename)
 
         if parser is None:
             raise DataFormatUnrecognised(filename, worksheet.name)
@@ -256,7 +258,7 @@ class DataFile:
     @classmethod
     def read_csv(cls, filename: str, args: argparse.Namespace) -> None:
         for reader in cls.read_csv_with_delimiter(filename):
-            parser = cls.get_parser(reader)
+            parser = cls.get_parser(reader, filename)
 
             if parser is not None:
                 sys.stderr.write(
@@ -305,12 +307,12 @@ class DataFile:
             cls.data_files_ordered.append(data_file)
 
     @staticmethod
-    def get_parser(reader: Iterator[List[str]]) -> Optional[DataParser]:
+    def get_parser(reader: Iterator[List[str]], filename: str) -> Optional[DataParser]:
         parser = None
         # Header might not be on first line
         for row in range(14):
             try:
-                parser = DataParser.match_header(next(reader), row)
+                parser = DataParser.match_header(next(reader), row, filename)
             except KeyError:
                 continue
             except StopIteration:

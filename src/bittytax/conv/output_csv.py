@@ -185,7 +185,7 @@ class OutputCsv(OutputBase):
     def _format_decimal(decimal: Optional[Decimal]) -> str:
         if decimal is None:
             return ""
-        return f"{decimal.normalize():0f}"
+        return f"{Decimal(str(decimal)).normalize():0f}"
 
     @staticmethod
     def _format_timestamp(timestamp: datetime) -> str:

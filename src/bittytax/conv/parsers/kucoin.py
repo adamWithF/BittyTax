@@ -246,6 +246,78 @@ def parse_kucoin_deposits(
         wallet=WALLET,
     )
 
+def parse_kucoin_bundle_deposits_withdrawals(data_row, parser, **_kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(row_dict["Time(UTC+08:00)"], tz="Asia/Singapore")
+
+    if "Withdrawal Address/Account" in row_dict:
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_WITHDRAWAL,
+            data_row.timestamp,
+            sell_quantity=row_dict["Amount"],
+            sell_asset=row_dict["Coin"],
+            fee_value=row_dict["Fee"],
+            wallet=row_dict["Withdrawal Address/Account"],
+        )
+    else:
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_DEPOSIT,
+            data_row.timestamp,
+            buy_quantity=row_dict["Amount"],
+            buy_asset=row_dict["Coin"],
+            fee_value=row_dict["Fee"],
+            wallet=WALLET,
+        )
+
+
+def parse_kucoin_bundle_earn_orders_profit(data_row, parser, **_kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(row_dict["Time(UTC+08:00)"], tz="Asia/Singapore")
+
+    data_row.t_record = TransactionOutRecord(
+        TransactionOutRecord.TYPE_GIFT_RECEIVED,
+        data_row.timestamp,
+        buy_quantity=row_dict["Amount"],
+        buy_asset=row_dict["Earnings Coin"],
+        fee_value=row_dict["Fee"],
+        wallet=row_dict["Withdrawal Address/Account"],
+    )
+
+
+def parse_kucoin_bundle_earn_orders_stacking(data_row, parser, **_kwargs):
+    row_dict = data_row.row_dict
+    data_row.timestamp = DataParser.parse_timestamp(row_dict["Staked Time(UTC+08:00)"], tz="Asia/Singapore")
+
+    data_row.t_record = TransactionOutRecord(
+        TransactionOutRecord.TYPE_STAKING,
+        data_row.timestamp,
+        buy_quantity=row_dict["Amount"],
+        buy_asset=row_dict["Staked Coin"],
+        wallet=row_dict["Withdrawal Address/Account"],
+    )
+
+
+def parse_kucoin_bundle_futures_pnl(data_row, parser, **_kwargs):
+    row_dict = data_row.row_dict
+    position_closing_time = DataParser.parse_timestamp(row_dict["Position Closing Time(UTC+08:00)"], tz="Asia/Singapore")
+    position_opening_time = DataParser.parse_timestamp(row_dict["Position Opening Time(UTC+08:00)"], tz="Asia/Singapore")
+    data_row.timestamp = position_closing_time
+
+    if data_row.timestamp:
+        pnl = Decimal(row_dict["Total Realized PNL"])
+        was_profitable = pnl >= 0
+        pnl = abs(pnl)
+        data_row.t_record = TransactionOutRecord(
+            TransactionOutRecord.TYPE_TRADE,
+            timestamp=position_closing_time,
+            buy_quantity=pnl if was_profitable else 0,
+            buy_asset="USDT",
+            sell_quantity=0 if was_profitable else pnl,
+            sell_asset="USDT",
+            fee_value=Decimal(row_dict["Total Funding Fees"]) + Decimal(row_dict["Total Trading Fees"]),
+            wallet=f"{WALLET} Futures",
+            note=position_closing_time,
+        )
 
 def parse_kucoin_withdrawals(
     data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[ParserArgs]
@@ -852,4 +924,47 @@ DataParser(
     ],
     worksheet_name="KuCoin T",
     row_handler=parse_kucoin_trades_v5,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Bundle Deposits History",
+    ["UID","Account Type","Time(UTC+08:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network"],
+    worksheet_name="Kucoin B D",
+    row_handler=parse_kucoin_bundle_deposits_withdrawals,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Bundle Withdrawals History",
+
+    ["UID","Account Type","Time(UTC+08:00)","Remarks","Status","Fee","Amount","Coin","Transfer Network","Withdrawal Address/Account"],
+    worksheet_name="Kucoin B W",
+    row_handler=parse_kucoin_bundle_deposits_withdrawals,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Bundle Earn Orders Profit History",
+
+    ["UID","Account Type","Order ID","Time(UTC+08:00)","Staked Coin","Product Type","Product Name","Earnings Coin","Earnings Type","Remarks","Amount","Amount（USDT）","Fee"],
+    worksheet_name="Kucoin B EOP",
+    row_handler=parse_kucoin_bundle_earn_orders_profit,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Bundle Earn Orders Stacking History",
+
+    ["UID","Account Type","Staked Time(UTC+08:00)","Staked Coin","Product Type","Product Name","Maturity Date(UTC+08:00)","Amount","Redemption Time(UTC+08:00)","Status"],
+    worksheet_name="Kucoin B EOS",
+    row_handler=parse_kucoin_bundle_earn_orders_stacking,
+)
+
+DataParser(
+    ParserType.EXCHANGE,
+    "KuCoin Bundle Futures Orders Realized PNL",
+    ["UID","Account Type","Symbol","Close Type","Realized PNL","Total Realized PNL","Total Funding Fees","Total Trading Fees","Position Opening Time(UTC+08:00)","Position Closing Time(UTC+08:00)"],
+    worksheet_name="Kucoin B F PNL",
+    row_handler=parse_kucoin_bundle_futures_pnl,
 )
