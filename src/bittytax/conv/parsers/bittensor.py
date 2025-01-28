@@ -55,7 +55,7 @@ def get_wallet_address(filename):
 
 arweave_txns = DataParser(
     ParserType.EXPLORER,
-    "Arweave",
+    "Bittensor",
     ["","Extrinsic","From","TO", "()=>\"Amount\"", "()=>\"Time\""],
     worksheet_name=WORKSHEET_NAME,
     row_handler=parse_bittensor)
