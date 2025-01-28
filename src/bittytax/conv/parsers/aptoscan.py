@@ -48,11 +48,8 @@ def parse_aptoscan_txns(
             wallet=_get_wallet(row_dict["From"]),
             fee_asset="APT",
             fee_quantity=Decimal(row_dict["Fee"]),
-            note=_get_note(row_dict["Function"]),
+            note=_get_note(row_dict),
         )
-
-def _get_note(row_dict: Dict[str, str]) -> str:
-    return str(row_dict)
 
 
 def parse_aptoscan_coin(
@@ -76,6 +73,7 @@ def parse_aptoscan_coin(
             buy_quantity=Decimal(row_dict["Amount"]),
             buy_asset=_get_asset(row_dict["Coin_Type"]) if row_dict["Coin_Type"]  else "APT",
             wallet=_get_wallet(row_dict["To"]),
+            note=_get_note(row_dict),
         )
     elif row_dict["From"].lower() in kwargs["filename"].lower():
         data_row.t_record = TransactionOutRecord(
@@ -86,9 +84,13 @@ def parse_aptoscan_coin(
             fee_quantity=Decimal(row_dict["Fee"]),
             fee_asset="APT",
             wallet=_get_wallet(row_dict["From"]),
+            note=_get_note(row_dict),
         )
     else:
         pass
+
+def _get_note(row_dict: Dict[str, str]) -> str:
+    return str(row_dict)
 
 
 def parse_aptoscan_tokens(
@@ -145,14 +147,7 @@ def _get_wallet(filename: str) -> str:
     return f"{WALLET}-{filename.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 
-def _get_note(function_str: str) -> str:
-    match = re.match(r"^(\w+)::(\w+)::(\w+)$", function_str)
-    if match:
-        return f"{match.group(3)} ({match.group(2)})"
-    return ""
-
-
-avax_txns = DataParser(
+apt_txns = DataParser(
     ParserType.EXPLORER,
     "Aptoscan (Transactions)",
     ["Version", "Block", "Time", "From", "To", "Asset", "Amount", "Fee", "Success"],
