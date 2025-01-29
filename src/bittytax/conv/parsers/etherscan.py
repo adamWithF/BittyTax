@@ -84,20 +84,19 @@ def parse_etherscan(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
 
 
 def _get_wallet(chain: str, address: str) -> str:
-    return f"{chain}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
+    return f"{chain}-Arbitrum-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 
 def _get_note(row_dict: Dict[str, str]) -> str:
+    output = ""
     if row_dict["Status"] != "":
         if row_dict.get("Method"):
-            return f'Failure ({row_dict["Method"]})'
-        return "Failure"
+            output = f'Failure ({row_dict["Method"]})'
+        output = "Failure"
+    elif row_dict.get("Method"):
+        output = row_dict["Method"]
 
-    if row_dict.get("Method"):
-        return row_dict["Method"]
-
-    return row_dict.get("PrivateNote", "")
-
+    return f"{output} {str(row_dict)}"
 
 def parse_etherscan_internal(
     data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[ParserArgs]
