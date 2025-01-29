@@ -89,16 +89,18 @@ def _parse_kraken_ledgers_row(
         pass
     else:
         if row_dict["transfer_from"].lower() in kwargs["filename"].lower():
-            data_row.t_record = TransactionOutRecord(
-                TrType.SPEND,
-                data_row.timestamp,
-                sell_quantity=Decimal(0),
-                sell_asset=row_dict["token_symbol"],
-                fee_quantity=Decimal(row_dict["transfer_amount"].replace(",", "")),
-                fee_asset=row_dict["token_symbol"],
-                wallet=_get_wallet(row_dict["transfer_from"]),
-                note=_get_note(row_dict),
-            )
+            # if row_dict["call"] not in ["burn", "mint", "transfer", "redeem", "deposit"]:
+            if row_dict["transfer_type"] == "fee_transfer":
+                data_row.t_record = TransactionOutRecord(
+                    TrType.SPEND,
+                    data_row.timestamp,
+                    sell_quantity=Decimal(0),
+                    sell_asset=row_dict["token_symbol"],
+                    fee_quantity=Decimal(row_dict["transfer_amount"].replace(",", "")),
+                    fee_asset=row_dict["token_symbol"],
+                    wallet=_get_wallet(row_dict["transfer_from"]),
+                    note=_get_note(row_dict),
+                )
 
 def _make_trade(ref_ids: List["DataRow"], **kwargs: Unpack[ParserArgs]) -> None:
     filename = kwargs["filename"].lower()
@@ -111,8 +113,7 @@ def _make_trade(ref_ids: List["DataRow"], **kwargs: Unpack[ParserArgs]) -> None:
         if data_row.t_record:
             continue
 
-        if row_dict["call"] == "swap" or row_dict["call"] ==  "swapExactTokensForTokens" or row_dict["call"] == "swapExactTokensForTokensSupportingFeeOnTransferTokens" or row_dict["call"] == "multi_route_swap" or row_dict["call"] == "clear_minimum":
-
+        if row_dict["call"] in ["swap", "swapExactTokensForTokens", "swapExactTokensForTokensSupportingFeeOnTransferTokens", "multi_route_swap", "clear_minimum"]:
             if row_dict["transfer_from"].lower() in filename:
                 sell_asset = row_dict["token_symbol"]
                 sell_quantity = Decimal(row_dict["transfer_amount"].replace(",", ""))
@@ -135,16 +136,18 @@ def _make_trade(ref_ids: List["DataRow"], **kwargs: Unpack[ParserArgs]) -> None:
                 buy_asset = sell_asset = None
         else:
             if row_dict["transfer_from"].lower() in filename:
-                data_row.t_record = TransactionOutRecord(
-                    TrType.SPEND,
-                    data_row.timestamp,
-                    sell_quantity=Decimal(0),
-                    sell_asset=row_dict["token_symbol"],
-                    fee_quantity=Decimal(row_dict["transfer_amount"].replace(",", "")),
-                    fee_asset=row_dict["token_symbol"],
-                    wallet=_get_wallet(row_dict["transfer_from"]),
-                    note=_get_note(row_dict),
-                )
+                # if row_dict["call"] not in ["burn", "mint", "transfer", "redeem", "deposit"]:
+                if row_dict["transfer_type"] == "fee_transfer":
+                    data_row.t_record = TransactionOutRecord(
+                        TrType.SPEND,
+                        data_row.timestamp,
+                        sell_quantity=Decimal(0),
+                        sell_asset=row_dict["token_symbol"],
+                        fee_quantity=Decimal(row_dict["transfer_amount"].replace(",", "")),
+                        fee_asset=row_dict["token_symbol"],
+                        wallet=_get_wallet(row_dict["transfer_from"]),
+                        note=_get_note(row_dict),
+                    )
 
 def _get_wallet(address):
     return "%s-%s" % (WALLET, address.lower()[0:TransactionOutRecord.WALLET_ADDR_LEN])
