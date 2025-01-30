@@ -37,7 +37,7 @@ def parse_mode_explorer(data_row: "DataRow", parser: DataParser, **_kwargs: Unpa
             data_row.t_record = TransactionOutRecord(
                 TrType.DEPOSIT,
                 data_row.timestamp,
-                buy_quantity=Decimal(row_dict["Value_IN(ETH)"]),
+                buy_quantity=Decimal(row_dict["Value_IN(ETH)"]) / 10**18,
                 buy_asset="ETH",
                 wallet=_get_wallet(row_dict["To"]),
                 note=_get_note(row_dict),
@@ -46,7 +46,7 @@ def parse_mode_explorer(data_row: "DataRow", parser: DataParser, **_kwargs: Unpa
         data_row.t_record = TransactionOutRecord(
             TrType.WITHDRAWAL,
             data_row.timestamp,
-            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]),
+            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]) / 10**18,
             sell_asset="ETH",
             fee_quantity=Decimal(row_dict["TxnFee(ETH)"]),
             fee_asset="ETH",
