@@ -84,7 +84,7 @@ def parse_etherscan(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
 
 
 def _get_wallet(chain: str, address: str) -> str:
-    return f"{chain}-Arbitrum-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
+    return f"{chain}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 
 def _get_note(row_dict: Dict[str, str]) -> str:

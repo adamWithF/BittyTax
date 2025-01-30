@@ -7,6 +7,6 @@ from . import (
     moonscan,
     optimism,
     polygonscan,
-    snowtrace,
+    # snowtrace,
     # starknet,
 )

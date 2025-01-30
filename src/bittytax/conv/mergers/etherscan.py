@@ -323,7 +323,7 @@ def _do_etherscan_multi_sell(
             tot_buy_quantity += split_buy_quantity
         else:
             # Last t_out, use up remainder
-            split_buy_quantity = buy_quantity - tot_buy_quantity
+            split_buy_quantity = Decimal(buy_quantity) - tot_buy_quantity
 
         if config.debug:
             sys.stderr.write(

@@ -38,7 +38,8 @@ def parse_snowtrace(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
             data_row.t_record = TransactionOutRecord(
                 TrType.DEPOSIT,
                 data_row.timestamp,
-                buy_quantity=Decimal(row_dict["Value_IN(ETH)"]),
+                # buy_quantity=Decimal(row_dict["Value_IN(ETH)"]),
+                buy_quantity=Decimal(row_dict["Value_IN(ETH)"]) / 10**18,
                 buy_asset="AVAX",
                 wallet=_get_wallet(row_dict["To"]),
                 note=_get_note(row_dict),
@@ -47,7 +48,7 @@ def parse_snowtrace(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
         data_row.t_record = TransactionOutRecord(
             TrType.WITHDRAWAL,
             data_row.timestamp,
-            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]),
+            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]) / 10**18,
             sell_asset="AVAX",
             fee_quantity=Decimal(row_dict["TxnFee(ETH)"]),
             fee_asset="AVAX",
@@ -58,7 +59,7 @@ def parse_snowtrace(data_row: "DataRow", parser: DataParser, **_kwargs: Unpack[P
         data_row.t_record = TransactionOutRecord(
             TrType.SPEND,
             data_row.timestamp,
-            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]),
+            sell_quantity=Decimal(row_dict["Value_OUT(ETH)"]) / 10**18,
             sell_asset="AVAX",
             fee_quantity=Decimal(row_dict["TxnFee(ETH)"]),
             fee_asset="AVAX",
@@ -71,45 +72,45 @@ def _get_wallet(address: str) -> str:
     return f"{WALLET}-{address.lower()[0 : TransactionOutRecord.WALLET_ADDR_LEN]}"
 
 
-def parse_snowtrace_tokens(
-    data_row: "DataRow", parser: DataParser, **kwargs: Unpack[ParserArgs]
-) -> None:
-    row_dict = data_row.row_dict
-    data_row.timestamp = DataParser.parse_timestamp(int(row_dict["block_unix_timestamp"]) / 1000)
-    row_dict["Transaction Hash"] = row_dict["tx_hash"]
-    data_row.tx_raw = TxRawPos(
-        parser.in_header.index("tx_hash"),
-        parser.in_header.index("from"),
-        parser.in_header.index("to"),
-    )
+# def parse_snowtrace_tokens(
+#     data_row: "DataRow", parser: DataParser, **kwargs: Unpack[ParserArgs]
+# ) -> None:
+#     row_dict = data_row.row_dict
+#     data_row.timestamp = DataParser.parse_timestamp(int(row_dict["block_unix_timestamp"]) / 1000)
+#     row_dict["Transaction Hash"] = row_dict["tx_hash"]
+#     data_row.tx_raw = TxRawPos(
+#         parser.in_header.index("tx_hash"),
+#         parser.in_header.index("from"),
+#         parser.in_header.index("to"),
+#     )
 
-    if row_dict["token_symbol"].endswith("-LP"):
-        asset = row_dict["token_symbol"] + "-" + row_dict["ContractAddress"][0:10]
-    else:
-        asset = row_dict["token_symbol"]
+#     if row_dict["token_symbol"].endswith("-LP"):
+#         asset = row_dict["token_symbol"] + "-" + row_dict["ContractAddress"][0:10]
+#     else:
+#         asset = row_dict["token_symbol"]
 
-    quantity = Decimal(row_dict["token_value"].replace(",", ""))
+#     quantity = Decimal(row_dict["token_value"].replace(",", ""))
 
-    if row_dict["to"].lower() in kwargs["filename"].lower():
-        data_row.t_record = TransactionOutRecord(
-            TrType.DEPOSIT,
-            data_row.timestamp,
-            buy_quantity=quantity,
-            buy_asset=asset,
-            wallet=_get_wallet(row_dict["to"]),
-            note=_get_note(row_dict),
-        )
-    elif row_dict["from"].lower() in kwargs["filename"].lower():
-        data_row.t_record = TransactionOutRecord(
-            TrType.WITHDRAWAL,
-            data_row.timestamp,
-            sell_quantity=quantity,
-            sell_asset=asset,
-            wallet=_get_wallet(row_dict["from"]),
-            note=_get_note(row_dict),
-        )
-    else:
-        raise DataFilenameError(kwargs["filename"], "Ethereum address")
+#     if row_dict["to"].lower() in kwargs["filename"].lower():
+#         data_row.t_record = TransactionOutRecord(
+#             TrType.DEPOSIT,
+#             data_row.timestamp,
+#             buy_quantity=quantity,
+#             buy_asset=asset,
+#             wallet=_get_wallet(row_dict["to"]),
+#             note=_get_note(row_dict),
+#         )
+#     elif row_dict["from"].lower() in kwargs["filename"].lower():
+#         data_row.t_record = TransactionOutRecord(
+#             TrType.WITHDRAWAL,
+#             data_row.timestamp,
+#             sell_quantity=quantity,
+#             sell_asset=asset,
+#             wallet=_get_wallet(row_dict["from"]),
+#             note=_get_note(row_dict),
+#         )
+#     else:
+#         raise DataFilenameError(kwargs["filename"], "Ethereum address")
 
 def parse_snowtrace_tokens(data_row, _parser, **kwargs):
     row_dict = data_row.row_dict
@@ -200,7 +201,7 @@ def _get_note(row_dict: Dict[str, str]) -> str:
     return str(row_dict)
 
 # Tokens and internal transactions have the same header as Etherscan
-avax_txns = DataParser(
+DataParser(
     ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     ["Transaction Hash","Blockno","UnixTimestamp","DateTime","From","To","ContractAddress","Value_IN(AVAX)","Value_OUT(AVAX)","CurrentValue/AVAX","TxnFee(AVAX)","TxnFee(USD)","Historical $Price/AVAX","Status","ErrCode","Method", "ChainId", "Chain", "Value(AVAX)"],
@@ -209,7 +210,7 @@ avax_txns = DataParser(
     filename_prefix="avalanche",
 )
 
-DataParser(
+avax_txns = DataParser(
     ParserType.EXPLORER,
     f"{WORKSHEET_NAME} ({WALLET} Transactions)",
     [
